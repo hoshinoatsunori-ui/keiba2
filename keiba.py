@@ -165,6 +165,30 @@ def api_fetch_all_shutuba():
     })
 
 
+# ── API: 予想グループ ─────────────────────────────────────────────────────────
+
+@app.route("/api/forecast_groups", methods=["GET"])
+def api_get_forecast_groups():
+    return jsonify(db.get_forecast_groups())
+
+
+@app.route("/api/forecast_groups", methods=["POST"])
+def api_create_forecast_group():
+    d = request.json or {}
+    name = d.get("name", "").strip()
+    color = d.get("color", "#1a73e8")
+    if not name:
+        return jsonify({"success": False, "message": "グループ名を入力してください"}), 400
+    group_id = db.create_forecast_group(name, color)
+    return jsonify({"success": True, "id": group_id, "name": name, "color": color})
+
+
+@app.route("/api/forecast_groups/<int:group_id>", methods=["DELETE"])
+def api_delete_forecast_group(group_id: int):
+    db.delete_forecast_group(group_id)
+    return jsonify({"success": True})
+
+
 # ── API: 買い目 ───────────────────────────────────────────────────────────────
 
 @app.route("/api/bets", methods=["GET"])
@@ -176,11 +200,14 @@ def api_get_bets():
 @app.route("/api/bets", methods=["POST"])
 def api_save_bet():
     d = request.json or {}
+    raw_fid = d.get("forecast_id")
+    forecast_id = int(raw_fid) if raw_fid else None
     bet_id = db.save_bet(
         race_id     = d.get("race_id", ""),
         ticket_type = d.get("ticket_type", ""),
         combination = d.get("combination", ""),
         purchase    = int(d.get("purchase", 100)),
+        forecast_id = forecast_id,
     )
     return jsonify({"success": True, "bet_id": bet_id})
 
@@ -425,7 +452,15 @@ def api_get_result(race_id: str):
 @app.route("/api/summary")
 def api_summary():
     year = request.args.get("year")
-    return jsonify(db.get_summary(int(year) if year else None))
+    raw_fid = request.args.get("forecast_id")
+    forecast_id = int(raw_fid) if raw_fid is not None and raw_fid != "" else None
+    return jsonify(db.get_summary(int(year) if year else None, forecast_id))
+
+
+@app.route("/api/summary/compare")
+def api_compare_summary():
+    year = request.args.get("year")
+    return jsonify(db.get_compare_summary(int(year) if year else None))
 
 
 # ── 起動 ──────────────────────────────────────────────────────────────────────

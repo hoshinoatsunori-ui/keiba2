@@ -25,6 +25,13 @@ def get_conn() -> sqlite3.Connection:
 def init_db():
     with get_conn() as conn:
         conn.executescript("""
+        CREATE TABLE IF NOT EXISTS forecast_groups (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            name       TEXT NOT NULL,
+            color      TEXT DEFAULT '#1a73e8',
+            created_at TEXT DEFAULT (datetime('now', 'localtime'))
+        );
+
         CREATE TABLE IF NOT EXISTS races (
             race_id     TEXT PRIMARY KEY,
             kaisai_date TEXT,
@@ -89,6 +96,10 @@ def init_db():
             FOREIGN KEY (race_id) REFERENCES races(race_id)
         );
         """)
+        # Migration: bets に forecast_id カラムを追加
+        cols = [r[1] for r in conn.execute("PRAGMA table_info(bets)").fetchall()]
+        if "forecast_id" not in cols:
+            conn.execute("ALTER TABLE bets ADD COLUMN forecast_id INTEGER DEFAULT NULL")
 
 
 # ── races ──────────────────────────────────────────────────────────────────
@@ -166,15 +177,40 @@ def get_horses(race_id: str) -> list[dict]:
         return [dict(r) for r in rows]
 
 
+# ── forecast_groups ─────────────────────────────────────────────────────────
+
+def get_forecast_groups() -> list[dict]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            "SELECT * FROM forecast_groups ORDER BY id"
+        ).fetchall()
+        return [dict(r) for r in rows]
+
+
+def create_forecast_group(name: str, color: str) -> int:
+    with get_conn() as conn:
+        cur = conn.execute(
+            "INSERT INTO forecast_groups (name, color) VALUES (?, ?)",
+            (name, color)
+        )
+        return cur.lastrowid
+
+
+def delete_forecast_group(group_id: int):
+    with get_conn() as conn:
+        conn.execute("UPDATE bets SET forecast_id=NULL WHERE forecast_id=?", (group_id,))
+        conn.execute("DELETE FROM forecast_groups WHERE id=?", (group_id,))
+
+
 # ── bets ───────────────────────────────────────────────────────────────────
 
 def save_bet(race_id: str, ticket_type: str, combination: str,
-             purchase: int) -> int:
+             purchase: int, forecast_id: int = None) -> int:
     with get_conn() as conn:
         cur = conn.execute(
-            """INSERT INTO bets (race_id, ticket_type, combination, purchase)
-               VALUES (?,?,?,?)""",
-            (race_id, ticket_type, combination, purchase)
+            """INSERT INTO bets (race_id, ticket_type, combination, purchase, forecast_id)
+               VALUES (?,?,?,?,?)""",
+            (race_id, ticket_type, combination, purchase, forecast_id)
         )
         return cur.lastrowid
 
@@ -186,16 +222,18 @@ def delete_bet(bet_id: int):
 
 def get_bets(race_id: str = None) -> list[dict]:
     with get_conn() as conn:
+        base = """SELECT b.*, r.race_name, r.kaisai_date,
+                         fg.name as group_name, fg.color as group_color
+                  FROM bets b
+                  LEFT JOIN races r ON b.race_id=r.race_id
+                  LEFT JOIN forecast_groups fg ON b.forecast_id=fg.id"""
         if race_id:
             rows = conn.execute(
-                "SELECT * FROM bets WHERE race_id=? ORDER BY id",
-                (race_id,)
+                base + " WHERE b.race_id=? ORDER BY b.id", (race_id,)
             ).fetchall()
         else:
             rows = conn.execute(
-                """SELECT b.*, r.race_name, r.kaisai_date
-                   FROM bets b LEFT JOIN races r ON b.race_id=r.race_id
-                   ORDER BY b.race_id, b.id"""
+                base + " ORDER BY b.race_id, b.id"
             ).fetchall()
         return [dict(r) for r in rows]
 
@@ -246,27 +284,40 @@ def get_result(race_id: str) -> dict | None:
 
 # ── 収支集計 ────────────────────────────────────────────────────────────────
 
-def get_summary(year: int = None) -> dict:
+def get_summary(year: int = None, forecast_id: int = None) -> dict:
+    """
+    forecast_id: None=全件, 0=グループなし(NULL), 正整数=指定グループ
+    """
     with get_conn() as conn:
         base = "FROM bets b LEFT JOIN races r ON b.race_id=r.race_id"
-        where = f"WHERE b.race_id LIKE '{year}%'" if year else ""
+        conditions, params = [], []
+        if year:
+            conditions.append("b.race_id LIKE ?")
+            params.append(f"{year}%")
+        if forecast_id is not None:
+            if forecast_id == 0:
+                conditions.append("b.forecast_id IS NULL")
+            else:
+                conditions.append("b.forecast_id = ?")
+                params.append(forecast_id)
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
 
         row = conn.execute(
-            f"SELECT SUM(purchase) total_bet, SUM(payout) total_payout, "
-            f"COUNT(*) total_count, SUM(CASE WHEN result='◎' THEN 1 ELSE 0 END) hit_count "
-            f"{base} {where}"
+            f"SELECT SUM(b.purchase) total_bet, SUM(b.payout) total_payout, "
+            f"COUNT(*) total_count, SUM(CASE WHEN b.result='◎' THEN 1 ELSE 0 END) hit_count "
+            f"{base} {where}", params
         ).fetchone()
 
         monthly = conn.execute(
             f"SELECT substr(r.kaisai_date,1,7) month, "
             f"SUM(b.purchase) bet, SUM(b.payout) payout "
-            f"{base} {where} GROUP BY substr(r.kaisai_date,1,7) ORDER BY 1"
+            f"{base} {where} GROUP BY substr(r.kaisai_date,1,7) ORDER BY 1", params
         ).fetchall()
 
         by_ticket = conn.execute(
             f"SELECT b.ticket_type, SUM(b.purchase) bet, SUM(b.payout) payout, "
             f"COUNT(*) total, SUM(CASE WHEN b.result='◎' THEN 1 ELSE 0 END) hit "
-            f"{base} {where} GROUP BY b.ticket_type ORDER BY bet DESC"
+            f"{base} {where} GROUP BY b.ticket_type ORDER BY bet DESC", params
         ).fetchall()
 
         total_bet    = row["total_bet"]    or 0
@@ -285,6 +336,52 @@ def get_summary(year: int = None) -> dict:
             "monthly":       [dict(r) for r in monthly],
             "by_ticket":     [dict(r) for r in by_ticket],
         }
+
+
+def get_compare_summary(year: int = None) -> list[dict]:
+    """グループごとの収支集計を返す（グループなし含む）"""
+    with get_conn() as conn:
+        conditions, params = [], []
+        if year:
+            conditions.append("b.race_id LIKE ?")
+            params.append(f"{year}%")
+        where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+
+        rows = conn.execute(
+            f"""SELECT b.forecast_id,
+                       fg.name  AS group_name,
+                       fg.color AS group_color,
+                       SUM(b.purchase) total_bet,
+                       SUM(b.payout)   total_payout,
+                       COUNT(*)        total_count,
+                       SUM(CASE WHEN b.result='◎' THEN 1 ELSE 0 END) hit_count
+                FROM bets b
+                LEFT JOIN forecast_groups fg ON b.forecast_id = fg.id
+                LEFT JOIN races r ON b.race_id = r.race_id
+                {where}
+                GROUP BY b.forecast_id
+                ORDER BY COALESCE(b.forecast_id, 999999)""",
+            params
+        ).fetchall()
+
+        result = []
+        for r in rows:
+            d = dict(r)
+            tb = d["total_bet"]    or 0
+            tp = d["total_payout"] or 0
+            tc = d["total_count"]  or 0
+            hc = d["hit_count"]    or 0
+            d["group_name"]     = d["group_name"]  or "グループなし"
+            d["group_color"]    = d["group_color"] or "#888888"
+            d["total_bet"]      = tb
+            d["total_payout"]   = tp
+            d["balance"]        = tp - tb
+            d["recovery_rate"]  = round(tp / tb * 100, 1) if tb else 0.0
+            d["total_count"]    = tc
+            d["hit_count"]      = hc
+            d["hit_rate"]       = round(hc / tc * 100, 1) if tc else 0.0
+            result.append(d)
+        return result
 
 
 # ── horse_detail ────────────────────────────────────────────────────────────

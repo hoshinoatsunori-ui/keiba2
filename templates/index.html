@@ -40,7 +40,8 @@ a{color:#1a73e8;text-decoration:none}
 
 /* ── フォーム ── */
 label{display:block;font-size:12px;font-weight:bold;color:#555;margin-bottom:3px;margin-top:10px}
-input[type=text],input[type=number],select{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:5px;font-size:13px}
+input[type=text],input[type=number],input[type=color],select{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:5px;font-size:13px}
+input[type=color]{padding:3px 6px;height:36px;cursor:pointer}
 input:focus,select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px #d2e3fc}
 
 /* ── ボタン ── */
@@ -113,6 +114,16 @@ tr:hover td{background:#f8f9fa}
 .bet-item .ticket{background:#1a73e8;color:#fff;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:bold}
 .bet-item .comb{flex:1;font-size:13px}
 .bet-item .price{color:#888;font-size:12px}
+.group-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── 比較テーブル ── */
+.compare-table th{text-align:center}
+.compare-table td:first-child{font-weight:bold;white-space:nowrap;background:#f8f9fa}
+.compare-table td{text-align:right}
+.compare-table .group-header{display:flex;align-items:center;justify-content:center;gap:6px}
+
+/* ── グループ管理 ── */
+.group-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px}
 </style>
 </head>
 <body>
@@ -142,6 +153,9 @@ tr:hover td{background:#f8f9fa}
     </div>
     <div class="nav-item" onclick="showPage('page-summary')" id="nav-summary">
       <span class="icon">📊</span>収支集計
+    </div>
+    <div class="nav-item" onclick="showPage('page-compare')" id="nav-compare">
+      <span class="icon">🔀</span>予想比較
     </div>
   </div>
 </nav>
@@ -254,6 +268,23 @@ tr:hover td{background:#f8f9fa}
   </div>
 
   <div class="card">
+    <div class="card-title">予想グループ</div>
+    <div style="display:flex;gap:10px;align-items:flex-end">
+      <div style="flex:1">
+        <label>このレースの買い目を記録するグループ</label>
+        <select id="bet-forecast-select">
+          <option value="">グループなし</option>
+        </select>
+      </div>
+      <a onclick="showPage('page-compare')" style="cursor:pointer;font-size:12px;color:#1a73e8;white-space:nowrap;padding-bottom:10px">グループを管理 →</a>
+    </div>
+    <div id="bet-group-indicator" style="margin-top:8px;display:none">
+      <span id="bet-group-dot" class="group-dot"></span>
+      <span id="bet-group-name" style="font-size:12px;margin-left:6px"></span>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">買い目を追加</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;align-items:flex-end">
       <div>
@@ -310,7 +341,7 @@ tr:hover td{background:#f8f9fa}
     <div class="tbl-wrap">
       <table>
         <thead>
-          <tr><th>race_id</th><th>レース名</th><th>券種</th><th>買い目</th>
+          <tr><th>race_id</th><th>レース名</th><th>グループ</th><th>券種</th><th>買い目</th>
               <th>購入</th><th>的中</th><th>払戻</th><th>収支</th><th></th></tr>
         </thead>
         <tbody id="bets-all-body"></tbody>
@@ -324,9 +355,13 @@ tr:hover td{background:#f8f9fa}
 
 <!-- ─────────────── 収支集計ページ ─────────────── -->
 <div id="page-summary" class="page">
-  <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px">
+  <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
     <select id="summary-year" onchange="loadSummary()" style="width:120px">
       <option value="">全期間</option>
+    </select>
+    <select id="summary-forecast" onchange="loadSummary()" style="width:180px">
+      <option value="">全グループ</option>
+      <option value="0">グループなし</option>
     </select>
     <button class="btn btn-primary btn-sm" onclick="loadSummary()">集計</button>
   </div>
@@ -355,6 +390,40 @@ tr:hover td{background:#f8f9fa}
   </div>
 </div>
 
+<!-- ─────────────── 予想比較ページ ─────────────── -->
+<div id="page-compare" class="page">
+
+  <div class="card">
+    <div class="card-title">予想グループ管理</div>
+    <div style="display:grid;grid-template-columns:1fr 160px 80px auto;gap:10px;align-items:flex-end">
+      <div>
+        <label>グループ名</label>
+        <input type="text" id="group-name-input" placeholder="例: 自分の予想、AI予想...">
+      </div>
+      <div>
+        <label>カラー</label>
+        <input type="color" id="group-color-input" value="#1a73e8">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button class="btn btn-success" onclick="createGroup()" style="width:100%">作成</button>
+      </div>
+    </div>
+    <div id="group-msg" style="margin-top:8px"></div>
+    <div id="group-list" style="margin-top:14px"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">予想グループ別 収支比較</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+      <select id="compare-year" onchange="loadCompare()" style="width:120px">
+        <option value="">全期間</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="loadCompare()">集計</button>
+    </div>
+    <div id="compare-table-wrap"></div>
+  </div>
+</div>
+
 </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /app -->
@@ -367,6 +436,7 @@ const PAGE_TITLES = {
   'page-bet':      '🎫 買い目入力',
   'page-result':   '🏆 結果取得',
   'page-summary':  '📊 収支集計',
+  'page-compare':  '🔀 予想比較',
 };
 
 function showPage(id) {
@@ -379,14 +449,16 @@ function showPage(id) {
   document.getElementById('page-title').textContent = PAGE_TITLES[id] || '';
 
   if (id === 'page-schedule') loadRaceList();
-  if (id === 'page-bet')      loadBetRaceSelect();
+  if (id === 'page-bet')      { loadBetRaceSelect(); loadForecastGroups(); }
   if (id === 'page-result')   loadAllBets();
-  if (id === 'page-summary')  { initSummaryYears(); loadSummary(); }
+  if (id === 'page-summary')  { initSummaryYears(); loadForecastGroupsForSummary(); loadSummary(); }
+  if (id === 'page-compare')  { initCompareYears(); loadForecastGroups(); loadCompare(); }
 }
 
 // ══ ユーティリティ ══════════════════════════════════════════════════════════
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
+  if (!el) return;
   if (!text) { el.innerHTML = ''; return; }
   const cls = type === 'ok' ? 'msg-ok' : type === 'err' ? 'msg-err' : 'msg-info';
   el.innerHTML = `<div class="msg ${cls}">${text}</div>`;
@@ -468,7 +540,7 @@ function goShutuba(raceId) {
 
 function goBet(raceId) {
   showPage('page-bet');
-  loadBetRaceSelect().then(() => {
+  Promise.all([loadBetRaceSelect(), loadForecastGroups()]).then(() => {
     document.getElementById('bet-race-select').value = raceId;
     loadBetsForRace();
   });
@@ -483,12 +555,6 @@ async function fetchShutuba() {
   if (!res.success) { showMsg('shutuba-msg', `❌ ${res.message}`, 'err'); return; }
   showMsg('shutuba-msg', `✅ ${res.message}`, 'ok');
   renderShutuba(res.race_info, res.horses);
-  // horse_id取得率をコンソールで確認
-  const hasId = res.horses.filter(h => h.horse_id).length;
-  console.log(`horse_id取得: ${hasId}/${res.horses.length}頭`);
-  if (hasId === 0) {
-    console.warn("horse_idが1件も取得できていません。出走表のHTML構造が変わっている可能性があります。");
-  }
 }
 
 async function fetchAllShutuba() {
@@ -533,11 +599,10 @@ async function fetchRaceDetails() {
   const raceId = document.getElementById('shutuba-race-id').value.trim();
   if (!raceId) return;
 
-  // 血統・近走タブへ切り替え
   switchShutubTab('tab-shutuba-detail',
     document.querySelectorAll('#shutuba-result .tab')[1]);
 
-  showMsg('detail-msg', '<span class="spinner"></span>horse_idを確認・補完してから血統・近走を一括取得中...', 'info');
+  showMsg('detail-msg', '<span class="spinner"></span>blood統・近走を一括取得中...', 'info');
   document.getElementById('btn-fetch-detail').disabled = true;
 
   const res = await api('POST', `/api/shutuba/${raceId}/fetch_details`, {});
@@ -637,7 +702,6 @@ function renderDetailList(horses) {
           <strong style="font-size:15px">${h.umaban}. ${h.bamei}</strong>
           <span style="color:#888;font-size:12px">${h.barei}</span>
           <span style="color:#666;font-size:12px">${h.jockey} / ${h.trainer}</span>
-
         </div>
         <div style="font-size:12px;font-weight:bold;color:#555;margin-bottom:2px">■ 血統</div>
         ${bloodHtml}
@@ -645,6 +709,95 @@ function renderDetailList(horses) {
         ${racesHtml}
       </div>`;
   }).join('');
+}
+
+// ══ 予想グループ ════════════════════════════════════════════════════════════
+let _forecastGroups = [];
+
+async function loadForecastGroups() {
+  const groups = await api('GET', '/api/forecast_groups');
+  _forecastGroups = groups;
+
+  // 買い目ページのグループセレクト更新
+  const sel = document.getElementById('bet-forecast-select');
+  if (sel) {
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">グループなし</option>'
+      + groups.map(g =>
+          `<option value="${g.id}" data-color="${g.color}">${g.name}</option>`
+        ).join('');
+    if (cur) sel.value = cur;
+    updateGroupIndicator();
+  }
+
+  renderGroupList(groups);
+}
+
+async function loadForecastGroupsForSummary() {
+  const groups = await api('GET', '/api/forecast_groups');
+  const sel = document.getElementById('summary-forecast');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">全グループ</option>'
+    + '<option value="0">グループなし</option>'
+    + groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+  if (cur !== undefined) sel.value = cur;
+}
+
+function updateGroupIndicator() {
+  const sel = document.getElementById('bet-forecast-select');
+  const indicator = document.getElementById('bet-group-indicator');
+  const dot = document.getElementById('bet-group-dot');
+  const name = document.getElementById('bet-group-name');
+  if (!sel) return;
+  const opt = sel.options[sel.selectedIndex];
+  if (sel.value && opt) {
+    dot.style.background = opt.dataset.color || '#888';
+    name.textContent = opt.textContent;
+    indicator.style.display = 'flex';
+    indicator.style.alignItems = 'center';
+  } else {
+    indicator.style.display = 'none';
+  }
+}
+
+function renderGroupList(groups) {
+  const el = document.getElementById('group-list');
+  if (!el) return;
+  if (!groups.length) {
+    el.innerHTML = '<div style="color:#aaa;padding:12px 0">グループがまだありません</div>';
+    return;
+  }
+  el.innerHTML = groups.map(g => `
+    <div class="group-item">
+      <span class="group-dot" style="background:${g.color};width:14px;height:14px"></span>
+      <span style="flex:1;font-weight:bold">${g.name}</span>
+      <span style="font-size:11px;color:#888">${g.created_at || ''}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id},'${g.name}')">削除</button>
+    </div>`).join('');
+}
+
+async function createGroup() {
+  const name = document.getElementById('group-name-input').value.trim();
+  const color = document.getElementById('group-color-input').value;
+  if (!name) { showMsg('group-msg', 'グループ名を入力してください', 'err'); return; }
+  const res = await api('POST', '/api/forecast_groups', { name, color });
+  if (res.success) {
+    document.getElementById('group-name-input').value = '';
+    showMsg('group-msg', `✅ グループ「${name}」を作成しました`, 'ok');
+    loadForecastGroups();
+    loadCompare();
+  } else {
+    showMsg('group-msg', `❌ ${res.message}`, 'err');
+  }
+}
+
+async function deleteGroup(id, name) {
+  if (!confirm(`グループ「${name}」を削除しますか？\n（このグループの買い目は「グループなし」になります）`)) return;
+  await api('DELETE', `/api/forecast_groups/${id}`);
+  showMsg('group-msg', `「${name}」を削除しました`, 'ok');
+  loadForecastGroups();
+  loadCompare();
 }
 
 // ══ 買い目 ══════════════════════════════════════════════════════════════════
@@ -678,13 +831,21 @@ function renderBetList(bets) {
     el.innerHTML = '<div style="color:#aaa;padding:12px">まだ買い目がありません</div>';
     return;
   }
-  el.innerHTML = bets.map(b => `
+  el.innerHTML = bets.map(b => {
+    const groupTag = b.group_name
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f0f4ff;border-radius:3px;padding:1px 6px;font-size:11px">
+           <span class="group-dot" style="background:${b.group_color||'#888'};width:8px;height:8px"></span>${b.group_name}
+         </span>`
+      : '<span style="font-size:11px;color:#aaa">グループなし</span>';
+    return `
     <div class="bet-item">
       <span class="ticket">${b.ticket_type}</span>
       <span class="comb">${b.combination}</span>
+      ${groupTag}
       <span class="price">¥${Number(b.purchase).toLocaleString()}</span>
       <button class="btn btn-danger btn-sm" onclick="deleteBet(${b.id})">削除</button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 async function addBet() {
@@ -693,11 +854,15 @@ async function addBet() {
   const combo = document.getElementById('bet-combination').value.trim();
   if (!combo)  { showMsg('bet-msg', '買い目を入力してください', 'err'); return; }
 
+  const forecastSel = document.getElementById('bet-forecast-select');
+  const forecastId = forecastSel && forecastSel.value ? parseInt(forecastSel.value) : null;
+
   const res = await api('POST', '/api/bets', {
     race_id:     raceId,
     ticket_type: document.getElementById('bet-ticket').value,
     combination: combo,
     purchase:    parseInt(document.getElementById('bet-purchase').value) || 100,
+    forecast_id: forecastId,
   });
   if (res.success) {
     document.getElementById('bet-combination').value = '';
@@ -734,17 +899,23 @@ async function loadAllBets() {
   const bets = await api('GET', '/api/bets');
   const tbody = document.getElementById('bets-all-body');
   if (!bets.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="color:#aaa;text-align:center;padding:20px">買い目がありません</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" style="color:#aaa;text-align:center;padding:20px">買い目がありません</td></tr>';
     return;
   }
   tbody.innerHTML = bets.map(b => {
     const balance = b.payout - b.purchase;
     const resultIcon = b.result === '◎' ? '◎' : b.result === '✗' ? '✗' : '─';
     const resultColor = b.result === '◎' ? '#34a853' : b.result === '✗' ? '#ea4335' : '#888';
+    const groupCell = b.group_name
+      ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px">
+           <span class="group-dot" style="background:${b.group_color||'#888'}"></span>${b.group_name}
+         </span>`
+      : '<span style="font-size:11px;color:#ccc">─</span>';
     return `<tr>
       <td><code style="font-size:11px">${b.race_id}</code></td>
       <td style="font-size:12px">${b.race_name || '─'}</td>
-      <td><span class="ticket" style="background:#1a73e8;color:#fff;padding:2px 6px;border-radius:3px;font-size:11px">${b.ticket_type}</span></td>
+      <td>${groupCell}</td>
+      <td><span style="background:#1a73e8;color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:bold">${b.ticket_type}</span></td>
       <td>${b.combination}</td>
       <td style="text-align:right">¥${Number(b.purchase).toLocaleString()}</td>
       <td style="text-align:center;font-weight:bold;color:${resultColor}">${resultIcon}</td>
@@ -773,9 +944,14 @@ function initSummaryYears() {
 
 async function loadSummary() {
   const year = document.getElementById('summary-year').value;
-  const s = await api('GET', '/api/summary' + (year ? `?year=${year}` : ''));
+  const fid  = document.getElementById('summary-forecast').value;
+  let path = '/api/summary';
+  const params = [];
+  if (year) params.push(`year=${year}`);
+  if (fid !== '') params.push(`forecast_id=${fid}`);
+  if (params.length) path += '?' + params.join('&');
+  const s = await api('GET', path);
 
-  // サマリーカード
   const cards = [
     { lbl: '総購入金額', val: `¥${Number(s.total_bet).toLocaleString()}`, cls: '' },
     { lbl: '総払戻金額', val: `¥${Number(s.total_payout).toLocaleString()}`, cls: '' },
@@ -792,7 +968,6 @@ async function loadSummary() {
     </div>`
   ).join('');
 
-  // 月別推移
   document.getElementById('monthly-body').innerHTML = s.monthly.length
     ? s.monthly.map(m => {
         const bal = (m.payout || 0) - (m.bet || 0);
@@ -807,7 +982,6 @@ async function loadSummary() {
       }).join('')
     : '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:16px">データなし</td></tr>';
 
-  // 券種別
   document.getElementById('ticket-body').innerHTML = s.by_ticket.length
     ? s.by_ticket.map(t => {
         const hr = t.total ? (t.hit / t.total * 100).toFixed(1) : '0.0';
@@ -821,6 +995,97 @@ async function loadSummary() {
         </tr>`;
       }).join('')
     : '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:16px">データなし</td></tr>';
+}
+
+// ══ 予想比較 ════════════════════════════════════════════════════════════════
+function initCompareYears() {
+  const sel = document.getElementById('compare-year');
+  const curYear = new Date().getFullYear();
+  sel.innerHTML = '<option value="">全期間</option>';
+  for (let y = curYear; y >= curYear - 3; y--) {
+    sel.innerHTML += `<option value="${y}">${y}年</option>`;
+  }
+}
+
+async function loadCompare() {
+  const year = document.getElementById('compare-year')?.value || '';
+  const data = await api('GET', '/api/summary/compare' + (year ? `?year=${year}` : ''));
+  renderCompareTable(data);
+}
+
+function renderCompareTable(groups) {
+  const el = document.getElementById('compare-table-wrap');
+  if (!groups.length) {
+    el.innerHTML = '<div style="color:#aaa;padding:16px">データがありません。先に買い目を登録してください。</div>';
+    return;
+  }
+
+  const METRICS = [
+    { key: 'total_bet',     label: '購入合計',
+      fmt: v => '¥' + Number(v).toLocaleString(), cls: () => '' },
+    { key: 'total_payout',  label: '払戻合計',
+      fmt: v => '¥' + Number(v).toLocaleString(), cls: () => '' },
+    { key: 'balance',       label: '収支',
+      fmt: v => fmtYen(v), cls: v => balanceClass(v) },
+    { key: 'recovery_rate', label: '回収率',
+      fmt: v => v + '%', cls: v => parseFloat(v) >= 100 ? 'plus' : 'minus' },
+    { key: 'total_count',   label: '購入回数',
+      fmt: v => v + '回', cls: () => '' },
+    { key: 'hit_count',     label: '的中回数',
+      fmt: v => v + '回', cls: () => '' },
+    { key: 'hit_rate',      label: '的中率',
+      fmt: v => v + '%', cls: () => '' },
+  ];
+
+  const headerCells = groups.map(g => `
+    <th style="text-align:center;min-width:120px">
+      <div class="group-header">
+        <span class="group-dot" style="background:${g.group_color}"></span>
+        <span>${g.group_name}</span>
+      </div>
+    </th>`).join('');
+
+  const rows = METRICS.map(m => {
+    const cells = groups.map(g => {
+      const val = g[m.key];
+      return `<td class="${m.cls(val)}">${m.fmt(val)}</td>`;
+    }).join('');
+    return `<tr><td style="font-weight:bold;white-space:nowrap;background:#f8f9fa;padding:8px 12px">${m.label}</td>${cells}</tr>`;
+  }).join('');
+
+  // 差分行を追加（グループが2つ以上ある場合）
+  let diffRows = '';
+  if (groups.length >= 2) {
+    diffRows = METRICS.map(m => {
+      const baseVal = groups[0][m.key];
+      const cells = groups.map((g, i) => {
+        if (i === 0) return `<td style="color:#aaa;text-align:right">─</td>`;
+        const diff = g[m.key] - baseVal;
+        const isYen = m.key === 'total_bet' || m.key === 'total_payout' || m.key === 'balance';
+        const isRate = m.key === 'recovery_rate' || m.key === 'hit_rate';
+        let diffStr = '';
+        if (isYen) diffStr = (diff >= 0 ? '+¥' : '-¥') + Math.abs(diff).toLocaleString();
+        else if (isRate) diffStr = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
+        else diffStr = (diff >= 0 ? '+' : '') + diff;
+        return `<td class="${diff > 0 ? 'plus' : diff < 0 ? 'minus' : 'neutral'}" style="font-size:12px">${diffStr}</td>`;
+      }).join('');
+      return `<tr style="background:#fafbff">
+        <td style="font-size:11px;color:#888;background:#f8f9fa;padding:4px 12px">↕ ${groups[0].group_name}との差</td>
+        ${cells}
+      </tr>`;
+    }).join('');
+  }
+
+  el.innerHTML = `
+    <div class="tbl-wrap">
+      <table class="compare-table">
+        <thead><tr><th style="text-align:left;background:#f8f9fa">指標</th>${headerCells}</tr></thead>
+        <tbody>
+          ${rows}
+          ${diffRows ? '<tr><td colspan="' + (groups.length+1) + '" style="padding:4px 0;background:#f0f2f5"></td></tr>' + diffRows : ''}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 // ══ 払戻モーダル ══════════════════════════════════════════════════════════
@@ -838,22 +1103,18 @@ async function showPayout(raceId, raceName) {
     return;
   }
 
-  // 着順
   const ranks = [res.rank1, res.rank2, res.rank3].filter(Boolean);
   document.getElementById('payout-rank').innerHTML =
     '<strong>着順：</strong>' + ['1着','2着','3着'].slice(0, ranks.length)
       .map((r,i) => `<span style="margin-right:16px">${r} ${ranks[i]}</span>`).join('');
 
-  // 払戻テーブル
   const harai = res.harai_list || [];
   if (!harai.length) {
-    // harai_listがない場合はharaimodoshiテキストを表示
     document.getElementById('payout-body').innerHTML =
       `<tr><td colspan="3" style="padding:12px;color:#666">${res.haraimodoshi || 'データなし'}</td></tr>`;
     return;
   }
 
-  // 券種の表示順
   const ORDER = ['単勝','複勝','枠連','馬連','ワイド','馬単','三連複','三連単'];
   const sorted = [...harai].sort((a, b) => {
     const ai = ORDER.indexOf(a.ticket_type);
@@ -873,7 +1134,6 @@ function closePayout() {
   document.getElementById('payout-modal').style.display = 'none';
 }
 
-// モーダル外クリックで閉じる
 document.getElementById('payout-modal').addEventListener('click', function(e) {
   if (e.target === this) closePayout();
 });

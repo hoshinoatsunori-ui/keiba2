@@ -29,7 +29,23 @@ def init_db():
             id         INTEGER PRIMARY KEY AUTOINCREMENT,
             name       TEXT NOT NULL,
             color      TEXT DEFAULT '#1a73e8',
+            type       TEXT DEFAULT 'ai',
+            ai_model   TEXT DEFAULT '',
             created_at TEXT DEFAULT (datetime('now', 'localtime'))
+        );
+
+        CREATE TABLE IF NOT EXISTS prediction_records (
+            id                INTEGER PRIMARY KEY AUTOINCREMENT,
+            race_id           TEXT NOT NULL,
+            forecast_group_id INTEGER NOT NULL,
+            prompt            TEXT DEFAULT '',
+            ai_output         TEXT DEFAULT '',
+            memo              TEXT DEFAULT '',
+            created_at        TEXT DEFAULT (datetime('now', 'localtime')),
+            updated_at        TEXT,
+            UNIQUE(race_id, forecast_group_id),
+            FOREIGN KEY (race_id) REFERENCES races(race_id),
+            FOREIGN KEY (forecast_group_id) REFERENCES forecast_groups(id)
         );
 
         CREATE TABLE IF NOT EXISTS races (
@@ -96,10 +112,16 @@ def init_db():
             FOREIGN KEY (race_id) REFERENCES races(race_id)
         );
         """)
-        # Migration: bets に forecast_id カラムを追加
+        # Migration: bets.forecast_id
         cols = [r[1] for r in conn.execute("PRAGMA table_info(bets)").fetchall()]
         if "forecast_id" not in cols:
             conn.execute("ALTER TABLE bets ADD COLUMN forecast_id INTEGER DEFAULT NULL")
+        # Migration: forecast_groups.type / ai_model
+        fg_cols = [r[1] for r in conn.execute("PRAGMA table_info(forecast_groups)").fetchall()]
+        if "type" not in fg_cols:
+            conn.execute("ALTER TABLE forecast_groups ADD COLUMN type TEXT DEFAULT 'ai'")
+        if "ai_model" not in fg_cols:
+            conn.execute("ALTER TABLE forecast_groups ADD COLUMN ai_model TEXT DEFAULT ''")
 
 
 # ── races ──────────────────────────────────────────────────────────────────
@@ -187,11 +209,12 @@ def get_forecast_groups() -> list[dict]:
         return [dict(r) for r in rows]
 
 
-def create_forecast_group(name: str, color: str) -> int:
+def create_forecast_group(name: str, color: str,
+                          type_: str = "ai", ai_model: str = "") -> int:
     with get_conn() as conn:
         cur = conn.execute(
-            "INSERT INTO forecast_groups (name, color) VALUES (?, ?)",
-            (name, color)
+            "INSERT INTO forecast_groups (name, color, type, ai_model) VALUES (?,?,?,?)",
+            (name, color, type_, ai_model)
         )
         return cur.lastrowid
 
@@ -199,7 +222,59 @@ def create_forecast_group(name: str, color: str) -> int:
 def delete_forecast_group(group_id: int):
     with get_conn() as conn:
         conn.execute("UPDATE bets SET forecast_id=NULL WHERE forecast_id=?", (group_id,))
+        conn.execute("DELETE FROM prediction_records WHERE forecast_group_id=?", (group_id,))
         conn.execute("DELETE FROM forecast_groups WHERE id=?", (group_id,))
+
+
+# ── prediction_records ──────────────────────────────────────────────────────
+
+def upsert_prediction_record(race_id: str, forecast_group_id: int,
+                              prompt: str = "", ai_output: str = "",
+                              memo: str = "") -> int:
+    with get_conn() as conn:
+        cur = conn.execute(
+            """INSERT INTO prediction_records
+               (race_id, forecast_group_id, prompt, ai_output, memo, updated_at)
+               VALUES (?,?,?,?,?,?)
+               ON CONFLICT(race_id, forecast_group_id) DO UPDATE SET
+               prompt=excluded.prompt, ai_output=excluded.ai_output,
+               memo=excluded.memo, updated_at=excluded.updated_at""",
+            (race_id, forecast_group_id, prompt, ai_output, memo,
+             datetime.now().strftime("%Y/%m/%d %H:%M"))
+        )
+        return cur.lastrowid
+
+
+def get_prediction_records(race_id: str = None,
+                            forecast_group_id: int = None) -> list[dict]:
+    with get_conn() as conn:
+        base = """SELECT pr.*, fg.name as group_name, fg.color as group_color,
+                         fg.type as group_type, fg.ai_model, r.race_name
+                  FROM prediction_records pr
+                  LEFT JOIN forecast_groups fg ON pr.forecast_group_id = fg.id
+                  LEFT JOIN races r ON pr.race_id = r.race_id"""
+        if race_id and forecast_group_id:
+            rows = conn.execute(
+                base + " WHERE pr.race_id=? AND pr.forecast_group_id=?",
+                (race_id, forecast_group_id)
+            ).fetchall()
+        elif race_id:
+            rows = conn.execute(
+                base + " WHERE pr.race_id=? ORDER BY fg.id", (race_id,)
+            ).fetchall()
+        elif forecast_group_id:
+            rows = conn.execute(
+                base + " WHERE pr.forecast_group_id=? ORDER BY pr.race_id",
+                (forecast_group_id,)
+            ).fetchall()
+        else:
+            rows = conn.execute(base + " ORDER BY pr.race_id, fg.id").fetchall()
+        return [dict(r) for r in rows]
+
+
+def delete_prediction_record(record_id: int):
+    with get_conn() as conn:
+        conn.execute("DELETE FROM prediction_records WHERE id=?", (record_id,))
 
 
 # ── bets ───────────────────────────────────────────────────────────────────

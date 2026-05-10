@@ -5,17 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>🏇 競馬収支管理</title>
 <style>
-/* ── リセット・ベース ── */
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Meiryo,Arial,sans-serif;font-size:14px;background:#f0f2f5;color:#333}
 a{color:#1a73e8;text-decoration:none}
 
-/* ── レイアウト ── */
 .app{display:flex;height:100vh;overflow:hidden}
 .sidebar{width:220px;min-width:220px;background:#1e2a3a;color:#c8d0dc;display:flex;flex-direction:column;overflow-y:auto}
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
-/* ── サイドバー ── */
 .sidebar-header{padding:20px 16px 12px;font-size:17px;font-weight:bold;color:#fff;border-bottom:1px solid #2d3f52}
 .nav-section{padding:10px 0}
 .nav-label{font-size:11px;color:#7a8a9a;padding:6px 16px 2px;text-transform:uppercase;letter-spacing:.5px}
@@ -24,27 +21,22 @@ a{color:#1a73e8;text-decoration:none}
 .nav-item.active{background:#2d3f52;border-left-color:#4a9eff;color:#fff}
 .nav-item .icon{margin-right:8px}
 
-/* ── ヘッダー ── */
 .topbar{background:#fff;border-bottom:1px solid #e0e0e0;padding:0 24px;height:52px;display:flex;align-items:center;gap:12px;flex-shrink:0}
 .topbar h1{font-size:16px;font-weight:bold;color:#333}
-.topbar-actions{margin-left:auto;display:flex;gap:8px}
 
-/* ── コンテンツ ── */
 .content{flex:1;overflow-y:auto;padding:20px 24px}
 .page{display:none}
 .page.active{display:block}
 
-/* ── カード ── */
 .card{background:#fff;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:20px;margin-bottom:16px}
 .card-title{font-size:14px;font-weight:bold;color:#444;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid #f0f2f5}
 
-/* ── フォーム ── */
 label{display:block;font-size:12px;font-weight:bold;color:#555;margin-bottom:3px;margin-top:10px}
-input[type=text],input[type=number],input[type=color],select{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:5px;font-size:13px}
+input[type=text],input[type=number],input[type=color],select,textarea{width:100%;padding:8px 10px;border:1px solid #d0d0d0;border-radius:5px;font-size:13px;font-family:inherit}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
 input[type=color]{padding:3px 6px;height:36px;cursor:pointer}
-input:focus,select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px #d2e3fc}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px #d2e3fc}
 
-/* ── ボタン ── */
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:5px;border:none;cursor:pointer;font-size:13px;font-weight:bold;transition:background .15s}
 .btn-primary{background:#1a73e8;color:#fff}
 .btn-primary:hover{background:#1558b0}
@@ -54,24 +46,22 @@ input:focus,select:focus{outline:none;border-color:#1a73e8;box-shadow:0 0 0 2px 
 .btn-warning:hover{background:#e6a800}
 .btn-danger{background:#ea4335;color:#fff}
 .btn-danger:hover{background:#c5221f}
+.btn-neutral{background:#f0f2f5;color:#555;border:1px solid #ddd}
+.btn-neutral:hover{background:#e0e2e5}
 .btn-sm{padding:5px 11px;font-size:12px}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 
-/* ── メッセージ ── */
 .msg{padding:10px 12px;border-radius:5px;margin:10px 0;font-size:13px}
 .msg-ok{background:#e6f4ea;color:#137333;border:1px solid #a8d5b5}
 .msg-err{background:#fce8e6;color:#c5221f;border:1px solid #f5a8a8}
 .msg-info{background:#e8f0fe;color:#1a73e8;border:1px solid #a8c4f5}
 
-/* ── テーブル ── */
 .tbl-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{background:#f8f9fa;padding:8px 10px;text-align:left;border-bottom:2px solid #e0e0e0;font-weight:bold;color:#555;white-space:nowrap}
 td{padding:7px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
 tr:hover td{background:#f8f9fa}
 .waku-cell{text-align:center;font-weight:bold;border-radius:3px;padding:3px 6px}
-
-/* 枠番色 */
 .w1{background:#fff;color:#000;border:1px solid #ccc}
 .w2{background:#000;color:#fff}
 .w3{background:#e00;color:#fff}
@@ -81,136 +71,112 @@ tr:hover td{background:#f8f9fa}
 .w7{background:#f60;color:#fff}
 .w8{background:#f69;color:#fff}
 
-/* ── 収支カラー ── */
 .plus{color:#34a853;font-weight:bold}
 .minus{color:#ea4335;font-weight:bold}
 .neutral{color:#888}
 
-/* ── タブ ── */
 .tabs{display:flex;border-bottom:2px solid #e0e0e0;margin-bottom:16px}
 .tab{padding:9px 18px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-weight:bold;color:#888;font-size:13px;background:none;border-top:none;border-left:none;border-right:none}
 .tab.active{color:#1a73e8;border-bottom-color:#1a73e8}
 .tab-panel{display:none}
 .tab-panel.active{display:block}
 
-/* ── スピナー ── */
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid #ddd;border-top-color:#1a73e8;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* ── 概要カード ── */
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
 .summary-card{background:#fff;border-radius:8px;padding:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);text-align:center}
 .summary-card .val{font-size:22px;font-weight:bold;margin-bottom:4px}
 .summary-card .lbl{font-size:11px;color:#888}
 
-/* ── レース一覧 ── */
 .race-badge{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:bold}
 .badge-pending{background:#fff3cd;color:#856404}
 .badge-scraped{background:#cce5ff;color:#004085}
 .badge-result{background:#d4edda;color:#155724}
 
-/* ── 買い目 ── */
 .bet-item{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f8f9fa;border-radius:5px;margin-bottom:6px}
 .bet-item .ticket{background:#1a73e8;color:#fff;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:bold}
 .bet-item .comb{flex:1;font-size:13px}
 .bet-item .price{color:#888;font-size:12px}
+
 .group-dot{display:inline-block;width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.type-badge{display:inline-block;padding:1px 6px;border-radius:3px;font-size:10px;font-weight:bold}
+.type-ai{background:#e8f0fe;color:#1a73e8}
+.type-self{background:#e6f4ea;color:#137333}
 
-/* ── 比較テーブル ── */
+.group-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px}
+
+/* 予想記録カード */
+.pred-block{border:1px solid #e0e0e0;border-radius:6px;padding:14px;margin-bottom:10px}
+.pred-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.pred-section-label{font-size:11px;font-weight:bold;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px}
+
+/* 比較テーブル */
 .compare-table th{text-align:center}
-.compare-table td:first-child{font-weight:bold;white-space:nowrap;background:#f8f9fa}
-.compare-table td{text-align:right}
-.compare-table .group-header{display:flex;align-items:center;justify-content:center;gap:6px}
+.compare-table .metric-cell{font-weight:bold;white-space:nowrap;background:#f8f9fa;padding:8px 12px}
+.compare-table .rank-1{background:#fff8e1}
+.compare-table .rank-2{background:#f5f5f5}
+.compare-table .rank-3{background:#fbe9e7}
 
-/* ── グループ管理 ── */
-.group-item{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#f8f9fa;border-radius:6px;margin-bottom:6px}
+/* 予想記録ビューア */
+.pred-view-block{border-left:4px solid;border-radius:0 6px 6px 0;padding:12px 14px;margin-bottom:10px;background:#fafbff}
+.pred-view-label{font-size:11px;font-weight:bold;color:#888;margin-bottom:4px}
+.pred-view-text{font-size:13px;line-height:1.6;white-space:pre-wrap;color:#333}
 </style>
 </head>
 <body>
 <div class="app">
 
-<!-- ══ サイドバー ══════════════════════════════════════════════════════════ -->
 <nav class="sidebar">
   <div class="sidebar-header">🏇 競馬収支管理</div>
-
   <div class="nav-section">
     <div class="nav-label">レース管理</div>
-    <div class="nav-item active" onclick="showPage('page-schedule')" id="nav-schedule">
-      <span class="icon">📅</span>日程・race_id取得
-    </div>
-    <div class="nav-item" onclick="showPage('page-shutuba')" id="nav-shutuba">
-      <span class="icon">📋</span>出走表
-    </div>
-    <div class="nav-item" onclick="showPage('page-bet')" id="nav-bet">
-      <span class="icon">🎫</span>買い目入力
-    </div>
+    <div class="nav-item active" onclick="showPage('page-schedule')" id="nav-schedule"><span class="icon">📅</span>日程・race_id取得</div>
+    <div class="nav-item" onclick="showPage('page-shutuba')" id="nav-shutuba"><span class="icon">📋</span>出走表</div>
+    <div class="nav-item" onclick="showPage('page-bet')" id="nav-bet"><span class="icon">🎫</span>買い目入力</div>
   </div>
-
   <div class="nav-section">
     <div class="nav-label">結果・収支</div>
-    <div class="nav-item" onclick="showPage('page-result')" id="nav-result">
-      <span class="icon">🏆</span>結果取得
-    </div>
-    <div class="nav-item" onclick="showPage('page-summary')" id="nav-summary">
-      <span class="icon">📊</span>収支集計
-    </div>
-    <div class="nav-item" onclick="showPage('page-compare')" id="nav-compare">
-      <span class="icon">🔀</span>予想比較
-    </div>
+    <div class="nav-item" onclick="showPage('page-result')" id="nav-result"><span class="icon">🏆</span>結果取得</div>
+    <div class="nav-item" onclick="showPage('page-summary')" id="nav-summary"><span class="icon">📊</span>収支集計</div>
+    <div class="nav-item" onclick="showPage('page-compare')" id="nav-compare"><span class="icon">🔀</span>予想比較</div>
   </div>
 </nav>
 
-<!-- ══ メインエリア ════════════════════════════════════════════════════════ -->
 <div class="main">
 <div class="topbar">
   <h1 id="page-title">📅 日程・race_id取得</h1>
-  <div class="topbar-actions" id="topbar-actions"></div>
 </div>
 <div class="content">
 
-<!-- ─────────────── 日程取得ページ ─────────────── -->
+<!-- ── 日程取得 ── -->
 <div id="page-schedule" class="page active">
   <div class="card">
     <div class="card-title">今週末を一括取得</div>
-    <p style="font-size:13px;color:#666;margin-bottom:12px;">
-      netkeibaから今週末（土・日）の全開催レースのrace_idを取得します。
-    </p>
-    <button class="btn btn-primary" onclick="fetchWeekend()">
-      📅 今週末のrace_idを取得
-    </button>
+    <p style="font-size:13px;color:#666;margin-bottom:12px">netkeibaから今週末（土・日）の全開催レースのrace_idを取得します。</p>
+    <button class="btn btn-primary" onclick="fetchWeekend()">📅 今週末のrace_idを取得</button>
     <div id="weekend-msg"></div>
   </div>
-
   <div class="card">
     <div class="card-title">特定日を指定して取得</div>
     <label>開催日（YYYYMMDD）</label>
     <input type="text" id="target-date" placeholder="例: 20260502" maxlength="8" style="max-width:200px">
-    <button class="btn btn-primary" onclick="fetchByDate()" style="margin-top:10px;">
-      この日のrace_idを取得
-    </button>
+    <button class="btn btn-primary" onclick="fetchByDate()" style="margin-top:10px">この日のrace_idを取得</button>
     <div id="bydate-msg"></div>
   </div>
-
   <div class="card">
     <div class="card-title">取得済みレース一覧</div>
     <div class="tbl-wrap">
-      <table id="race-list-table">
-        <thead>
-          <tr>
-            <th>race_id</th><th>開催日</th><th>競馬場</th><th>R</th>
-            <th>レース名</th><th>ステータス</th><th>操作</th>
-          </tr>
-        </thead>
+      <table>
+        <thead><tr><th>race_id</th><th>開催日</th><th>競馬場</th><th>R</th><th>レース名</th><th>ステータス</th><th>操作</th></tr></thead>
         <tbody id="race-list-body"></tbody>
       </table>
     </div>
-    <button class="btn btn-warning" onclick="loadRaceList()" style="margin-top:12px;">
-      🔄 一覧を更新
-    </button>
+    <button class="btn btn-warning" onclick="loadRaceList()" style="margin-top:12px">🔄 一覧を更新</button>
   </div>
 </div>
 
-<!-- ─────────────── 出走表ページ ─────────────── -->
+<!-- ── 出走表 ── -->
 <div id="page-shutuba" class="page">
   <div class="card">
     <div class="card-title">出走表を取得・表示</div>
@@ -225,7 +191,6 @@ tr:hover td{background:#f8f9fa}
     </div>
     <div id="shutuba-msg"></div>
   </div>
-
   <div id="shutuba-result" style="display:none">
     <div class="card">
       <div class="card-title" id="shutuba-race-title">出走表</div>
@@ -233,21 +198,14 @@ tr:hover td{background:#f8f9fa}
         <button class="tab active" onclick="switchShutubTab('tab-shutuba-list',this)">出走表</button>
         <button class="tab" onclick="switchShutubTab('tab-shutuba-detail',this)">🧬 血統・近走</button>
       </div>
-
-      <!-- 出走表タブ -->
       <div id="tab-shutuba-list" class="tab-panel active" style="padding-top:12px">
         <div class="tbl-wrap">
           <table>
-            <thead>
-              <tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢</th>
-                  <th>騎手</th><th>斤量</th><th>調教師</th><th>オッズ</th><th>詳細</th></tr>
-            </thead>
+            <thead><tr><th>枠</th><th>馬番</th><th>馬名</th><th>性齢</th><th>騎手</th><th>斤量</th><th>調教師</th><th>オッズ</th></tr></thead>
             <tbody id="shutuba-body"></tbody>
           </table>
         </div>
       </div>
-
-      <!-- 血統・近走タブ -->
       <div id="tab-shutuba-detail" class="tab-panel" style="padding-top:12px">
         <div id="detail-msg"></div>
         <div id="detail-list"></div>
@@ -256,12 +214,12 @@ tr:hover td{background:#f8f9fa}
   </div>
 </div>
 
-<!-- ─────────────── 買い目ページ ─────────────── -->
+<!-- ── 買い目入力 ── -->
 <div id="page-bet" class="page">
   <div class="card">
     <div class="card-title">レース選択</div>
     <label>race_id</label>
-    <select id="bet-race-select" onchange="loadBetsForRace()">
+    <select id="bet-race-select" onchange="onBetRaceChange()">
       <option value="">── レースを選択 ──</option>
     </select>
     <div id="bet-race-info" style="margin-top:8px;font-size:12px;color:#666"></div>
@@ -272,16 +230,29 @@ tr:hover td{background:#f8f9fa}
     <div style="display:flex;gap:10px;align-items:flex-end">
       <div style="flex:1">
         <label>このレースの買い目を記録するグループ</label>
-        <select id="bet-forecast-select">
+        <select id="bet-forecast-select" onchange="onBetGroupChange()">
           <option value="">グループなし</option>
         </select>
       </div>
       <a onclick="showPage('page-compare')" style="cursor:pointer;font-size:12px;color:#1a73e8;white-space:nowrap;padding-bottom:10px">グループを管理 →</a>
     </div>
-    <div id="bet-group-indicator" style="margin-top:8px;display:none">
+    <div id="bet-group-indicator" style="display:none;align-items:center;gap:6px;margin-top:8px">
       <span id="bet-group-dot" class="group-dot"></span>
-      <span id="bet-group-name" style="font-size:12px;margin-left:6px"></span>
+      <span id="bet-group-name" style="font-size:12px;font-weight:bold"></span>
+      <span id="bet-group-type" class="type-badge"></span>
+      <span id="bet-group-model" style="font-size:11px;color:#888"></span>
     </div>
+  </div>
+
+  <!-- 予想記録カード -->
+  <div class="card" id="prediction-card" style="display:none">
+    <div class="card-title">📝 予想を記録</div>
+    <div id="prediction-form-wrap"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary btn-sm" onclick="savePrediction()">💾 保存</button>
+      <button class="btn btn-neutral btn-sm" onclick="clearPredictionForm()">クリア</button>
+    </div>
+    <div id="pred-save-msg"></div>
   </div>
 
   <div class="card">
@@ -314,122 +285,126 @@ tr:hover td{background:#f8f9fa}
   </div>
 </div>
 
-<!-- ─────────────── 結果取得ページ ─────────────── -->
+<!-- ── 結果取得 ── -->
 <div id="page-result" class="page">
   <div class="card">
     <div class="card-title">レース結果・払戻を取得</div>
-    <p style="font-size:13px;color:#666;margin-bottom:12px;">
-      買い目が登録されていて結果が未取得のレースを一括処理します。<br>
-      的中判定・払戻金額・収支が自動で計算されます。
-    </p>
-    <div style="background:#fff3cd;border-radius:5px;padding:10px 12px;font-size:12px;margin-bottom:12px;">
+    <p style="font-size:13px;color:#666;margin-bottom:12px">買い目が登録されていて結果が未取得のレースを一括処理します。</p>
+    <div style="background:#fff3cd;border-radius:5px;padding:10px 12px;font-size:12px;margin-bottom:12px">
       ⚠️ レース終了後、netkeibaへの結果反映まで数時間かかる場合があります。
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary" onclick="fetchResults()">
-        📥 結果を一括取得
-      </button>
-      <button class="btn btn-warning" onclick="refetchResults()" title="取得済みも含めて再取得します">
-        🔄 再取得（強制）
-      </button>
+      <button class="btn btn-primary" onclick="fetchResults()">📥 結果を一括取得</button>
+      <button class="btn btn-warning" onclick="refetchResults()">🔄 再取得（強制）</button>
     </div>
     <div id="result-msg"></div>
   </div>
-
   <div class="card">
     <div class="card-title">買い目と結果</div>
     <div class="tbl-wrap">
       <table>
-        <thead>
-          <tr><th>race_id</th><th>レース名</th><th>グループ</th><th>券種</th><th>買い目</th>
-              <th>購入</th><th>的中</th><th>払戻</th><th>収支</th><th></th></tr>
-        </thead>
+        <thead><tr><th>race_id</th><th>レース名</th><th>グループ</th><th>券種</th><th>買い目</th><th>購入</th><th>的中</th><th>払戻</th><th>収支</th><th></th></tr></thead>
         <tbody id="bets-all-body"></tbody>
       </table>
     </div>
-    <button class="btn btn-warning" onclick="loadAllBets()" style="margin-top:12px;">
-      🔄 一覧を更新
-    </button>
+    <button class="btn btn-warning" onclick="loadAllBets()" style="margin-top:12px">🔄 一覧を更新</button>
   </div>
 </div>
 
-<!-- ─────────────── 収支集計ページ ─────────────── -->
+<!-- ── 収支集計 ── -->
 <div id="page-summary" class="page">
   <div style="display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
-    <select id="summary-year" onchange="loadSummary()" style="width:120px">
-      <option value="">全期間</option>
-    </select>
+    <select id="summary-year" onchange="loadSummary()" style="width:120px"><option value="">全期間</option></select>
     <select id="summary-forecast" onchange="loadSummary()" style="width:180px">
       <option value="">全グループ</option>
       <option value="0">グループなし</option>
     </select>
     <button class="btn btn-primary btn-sm" onclick="loadSummary()">集計</button>
   </div>
-
   <div class="summary-grid" id="summary-cards"></div>
-
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
     <div class="card">
       <div class="card-title">月別推移</div>
       <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>月</th><th>購入</th><th>払戻</th><th>収支</th><th>回収率</th></tr></thead>
-          <tbody id="monthly-body"></tbody>
-        </table>
+        <table><thead><tr><th>月</th><th>購入</th><th>払戻</th><th>収支</th><th>回収率</th></tr></thead>
+        <tbody id="monthly-body"></tbody></table>
       </div>
     </div>
     <div class="card">
       <div class="card-title">券種別内訳</div>
       <div class="tbl-wrap">
-        <table>
-          <thead><tr><th>券種</th><th>購入</th><th>払戻</th><th>的中率</th><th>回収率</th></tr></thead>
-          <tbody id="ticket-body"></tbody>
-        </table>
+        <table><thead><tr><th>券種</th><th>購入</th><th>払戻</th><th>的中率</th><th>回収率</th></tr></thead>
+        <tbody id="ticket-body"></tbody></table>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ─────────────── 予想比較ページ ─────────────── -->
+<!-- ── 予想比較 ── -->
 <div id="page-compare" class="page">
 
+  <!-- グループ管理 -->
   <div class="card">
     <div class="card-title">予想グループ管理</div>
-    <div style="display:grid;grid-template-columns:1fr 160px 80px auto;gap:10px;align-items:flex-end">
+    <div style="display:grid;grid-template-columns:1fr 140px 1fr 100px auto;gap:10px;align-items:flex-end">
       <div>
         <label>グループ名</label>
-        <input type="text" id="group-name-input" placeholder="例: 自分の予想、AI予想...">
+        <input type="text" id="group-name-input" placeholder="例: Claude予想、自分の本命...">
+      </div>
+      <div>
+        <label>タイプ</label>
+        <select id="group-type-input" onchange="toggleGroupModelField()">
+          <option value="ai">🤖 AI予想</option>
+          <option value="self">👤 自分の予想</option>
+        </select>
+      </div>
+      <div id="group-model-wrap">
+        <label>AIモデル名</label>
+        <input type="text" id="group-model-input" placeholder="例: GPT-4o, Claude 3.5...">
       </div>
       <div>
         <label>カラー</label>
         <input type="color" id="group-color-input" value="#1a73e8">
       </div>
       <div style="display:flex;align-items:flex-end">
-        <button class="btn btn-success" onclick="createGroup()" style="width:100%">作成</button>
+        <button class="btn btn-success" onclick="createGroup()" style="white-space:nowrap">＋ 作成</button>
       </div>
     </div>
     <div id="group-msg" style="margin-top:8px"></div>
     <div id="group-list" style="margin-top:14px"></div>
   </div>
 
+  <!-- 収支比較テーブル -->
   <div class="card">
-    <div class="card-title">予想グループ別 収支比較</div>
+    <div class="card-title">📊 グループ別 収支比較・順位</div>
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
-      <select id="compare-year" onchange="loadCompare()" style="width:120px">
-        <option value="">全期間</option>
-      </select>
+      <select id="compare-year" onchange="loadCompare()" style="width:120px"><option value="">全期間</option></select>
       <button class="btn btn-primary btn-sm" onclick="loadCompare()">集計</button>
     </div>
     <div id="compare-table-wrap"></div>
   </div>
-</div>
+
+  <!-- 予想内容ビューア -->
+  <div class="card">
+    <div class="card-title">📋 レース別 予想内容</div>
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+      <select id="pred-race-select" style="flex:1" onchange="loadPredictions()">
+        <option value="">── レースを選択 ──</option>
+      </select>
+    </div>
+    <div id="predictions-view">
+      <div style="color:#aaa;padding:8px 0;font-size:13px">レースを選択すると各グループの予想内容が表示されます</div>
+    </div>
+  </div>
+
+</div><!-- /page-compare -->
 
 </div><!-- /content -->
 </div><!-- /main -->
 </div><!-- /app -->
 
 <script>
-// ══ ページ切り替え ══════════════════════════════════════════════════════════
+// ══ ページ切り替え ═══════════════════════════════════════════════════════════
 const PAGE_TITLES = {
   'page-schedule': '📅 日程・race_id取得',
   'page-shutuba':  '📋 出走表',
@@ -443,19 +418,18 @@ function showPage(id) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const navId = 'nav-' + id.replace('page-', '');
-  const nav = document.getElementById(navId);
+  const nav = document.getElementById('nav-' + id.replace('page-', ''));
   if (nav) nav.classList.add('active');
   document.getElementById('page-title').textContent = PAGE_TITLES[id] || '';
 
   if (id === 'page-schedule') loadRaceList();
   if (id === 'page-bet')      { loadBetRaceSelect(); loadForecastGroups(); }
   if (id === 'page-result')   loadAllBets();
-  if (id === 'page-summary')  { initSummaryYears(); loadForecastGroupsForSummary(); loadSummary(); }
-  if (id === 'page-compare')  { initCompareYears(); loadForecastGroups(); loadCompare(); }
+  if (id === 'page-summary')  { initYearSelect('summary-year'); loadForecastGroupsForFilter('summary-forecast'); loadSummary(); }
+  if (id === 'page-compare')  { initYearSelect('compare-year'); loadForecastGroups(); loadCompare(); loadPredRaceSelect(); }
 }
 
-// ══ ユーティリティ ══════════════════════════════════════════════════════════
+// ══ ユーティリティ ═══════════════════════════════════════════════════════════
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -466,45 +440,45 @@ function showMsg(id, text, type) {
 
 async function api(method, path, body) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
-  if (body) opts.body = JSON.stringify(body);
+  if (body !== undefined) opts.body = JSON.stringify(body);
   const r = await fetch(path, opts);
   return r.json();
 }
 
-function fmtYen(n) {
-  return (n >= 0 ? '+' : '') + Number(n).toLocaleString() + '円';
-}
-
-function balanceClass(n) {
-  return n > 0 ? 'plus' : n < 0 ? 'minus' : 'neutral';
-}
-
+function fmtYen(n) { return (n >= 0 ? '+' : '') + Number(n).toLocaleString() + '円'; }
+function balanceClass(n) { return n > 0 ? 'plus' : n < 0 ? 'minus' : 'neutral'; }
 const WAKU_CLASS = ['','w1','w2','w3','w4','w5','w6','w7','w8'];
 
-// ══ 日程取得 ════════════════════════════════════════════════════════════════
+function initYearSelect(selId) {
+  const sel = document.getElementById(selId);
+  if (!sel) return;
+  const cur = sel.value;
+  const y = new Date().getFullYear();
+  sel.innerHTML = '<option value="">全期間</option>';
+  for (let i = y; i >= y - 3; i--) sel.innerHTML += `<option value="${i}">${i}年</option>`;
+  if (cur) sel.value = cur;
+}
+
+// ══ 日程取得 ═════════════════════════════════════════════════════════════════
 async function fetchWeekend() {
   showMsg('weekend-msg', '<span class="spinner"></span>今週末のrace_idを取得中...', 'info');
   const { dates } = await api('GET', '/api/weekend_dates');
-  let totalAdded = 0, totalSkipped = 0;
+  let added = 0, skipped = 0;
   for (const d of dates) {
-    const res = await api('POST', '/api/fetch_race_ids', { kaisai_date: d });
-    if (res.success) { totalAdded += res.added; totalSkipped += res.skipped; }
+    const r = await api('POST', '/api/fetch_race_ids', { kaisai_date: d });
+    if (r.success) { added += r.added; skipped += r.skipped; }
   }
-  showMsg('weekend-msg',
-    `✅ 取得完了 — 登録: ${totalAdded}件 / スキップ: ${totalSkipped}件`, 'ok');
+  showMsg('weekend-msg', `✅ 登録: ${added}件 / スキップ: ${skipped}件`, 'ok');
   loadRaceList();
 }
 
 async function fetchByDate() {
   const d = document.getElementById('target-date').value.trim();
-  if (!/^\d{8}$/.test(d)) {
-    showMsg('bydate-msg', 'YYYYMMDD形式（8桁）で入力してください', 'err'); return;
-  }
+  if (!/^\d{8}$/.test(d)) { showMsg('bydate-msg', 'YYYYMMDD形式（8桁）で入力してください', 'err'); return; }
   showMsg('bydate-msg', '<span class="spinner"></span>取得中...', 'info');
-  const res = await api('POST', '/api/fetch_race_ids', { kaisai_date: d });
-  showMsg('bydate-msg', res.success ? `✅ ${res.message}` : `❌ ${res.message}`,
-          res.success ? 'ok' : 'err');
-  if (res.success) loadRaceList();
+  const r = await api('POST', '/api/fetch_race_ids', { kaisai_date: d });
+  showMsg('bydate-msg', r.success ? `✅ ${r.message}` : `❌ ${r.message}`, r.success ? 'ok' : 'err');
+  if (r.success) loadRaceList();
 }
 
 async function loadRaceList() {
@@ -515,14 +489,11 @@ async function loadRaceList() {
     return;
   }
   tbody.innerHTML = races.map(r => {
-    const badge = r.status === '結果取得済' ? 'badge-result'
-                : r.status === '出走表取得済' ? 'badge-scraped' : 'badge-pending';
+    const badge = r.status === '結果取得済' ? 'badge-result' : r.status === '出走表取得済' ? 'badge-scraped' : 'badge-pending';
     return `<tr>
       <td><code style="font-size:11px">${r.race_id}</code></td>
-      <td>${r.kaisai_date || ''}</td>
-      <td>${r.jo_name || ''}</td>
-      <td>${r.race_no || ''}R</td>
-      <td>${r.race_name || '─'}</td>
+      <td>${r.kaisai_date||''}</td><td>${r.jo_name||''}</td><td>${r.race_no||''}R</td>
+      <td>${r.race_name||'─'}</td>
       <td><span class="race-badge ${badge}">${r.status}</span></td>
       <td>
         <button class="btn btn-primary btn-sm" onclick="goShutuba('${r.race_id}')">出走表</button>
@@ -532,36 +503,30 @@ async function loadRaceList() {
   }).join('');
 }
 
-function goShutuba(raceId) {
-  document.getElementById('shutuba-race-id').value = raceId;
-  showPage('page-shutuba');
-  fetchShutuba();
-}
-
-function goBet(raceId) {
+function goShutuba(id) { document.getElementById('shutuba-race-id').value = id; showPage('page-shutuba'); fetchShutuba(); }
+function goBet(id) {
   showPage('page-bet');
   Promise.all([loadBetRaceSelect(), loadForecastGroups()]).then(() => {
-    document.getElementById('bet-race-select').value = raceId;
-    loadBetsForRace();
+    document.getElementById('bet-race-select').value = id;
+    onBetRaceChange();
   });
 }
 
-// ══ 出走表 ══════════════════════════════════════════════════════════════════
+// ══ 出走表 ═══════════════════════════════════════════════════════════════════
 async function fetchShutuba() {
-  const raceId = document.getElementById('shutuba-race-id').value.trim();
-  if (!raceId) { showMsg('shutuba-msg', 'race_idを入力してください', 'err'); return; }
-  showMsg('shutuba-msg', '<span class="spinner"></span>出走表を取得中...', 'info');
-  const res = await api('POST', `/api/shutuba/${raceId}/fetch`);
-  if (!res.success) { showMsg('shutuba-msg', `❌ ${res.message}`, 'err'); return; }
-  showMsg('shutuba-msg', `✅ ${res.message}`, 'ok');
-  renderShutuba(res.race_info, res.horses);
+  const id = document.getElementById('shutuba-race-id').value.trim();
+  if (!id) { showMsg('shutuba-msg', 'race_idを入力してください', 'err'); return; }
+  showMsg('shutuba-msg', '<span class="spinner"></span>取得中...', 'info');
+  const r = await api('POST', `/api/shutuba/${id}/fetch`);
+  if (!r.success) { showMsg('shutuba-msg', `❌ ${r.message}`, 'err'); return; }
+  showMsg('shutuba-msg', `✅ ${r.message}`, 'ok');
+  renderShutuba(r.race_info, r.horses);
 }
 
 async function fetchAllShutuba() {
-  showMsg('shutuba-msg', '<span class="spinner"></span>一括取得中（時間がかかります）...', 'info');
-  const res = await api('POST', '/api/shutuba/fetch_all');
-  showMsg('shutuba-msg', res.success ? `✅ ${res.message}` : `❌ ${res.message}`,
-          res.success ? 'ok' : 'err');
+  showMsg('shutuba-msg', '<span class="spinner"></span>一括取得中...', 'info');
+  const r = await api('POST', '/api/shutuba/fetch_all');
+  showMsg('shutuba-msg', r.success ? `✅ ${r.message}` : `❌ ${r.message}`, r.success ? 'ok' : 'err');
   loadRaceList();
 }
 
@@ -573,66 +538,40 @@ function switchShutubTab(tabId, btn) {
 }
 
 function renderShutuba(ri, horses) {
-  document.getElementById('shutuba-race-title').textContent =
-    `${ri.race_name}  ${ri.race_data}`;
+  document.getElementById('shutuba-race-title').textContent = `${ri.race_name}  ${ri.race_data}`;
   document.getElementById('shutuba-result').style.display = 'block';
   document.getElementById('btn-fetch-detail').style.display = 'inline-flex';
   const tbody = document.getElementById('shutuba-body');
-  if (!horses.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="color:#aaa;text-align:center">出走馬データがありません</td></tr>';
-    return;
-  }
-  tbody.innerHTML = horses.map(h => `<tr>
-    <td><span class="waku-cell ${WAKU_CLASS[h.wakuban]||''}">${h.wakuban}</span></td>
-    <td style="text-align:center">${h.umaban}</td>
-    <td><strong>${h.bamei}</strong></td>
-    <td>${h.barei}</td>
-    <td>${h.jockey}</td>
-    <td style="text-align:right">${h.kinryo}</td>
-    <td style="font-size:12px;color:#666">${h.trainer}</td>
-    <td style="text-align:right">${h.odds}</td>
-    <td></td>
-  </tr>`).join('');
+  tbody.innerHTML = horses.length
+    ? horses.map(h => `<tr>
+        <td><span class="waku-cell ${WAKU_CLASS[h.wakuban]||''}">${h.wakuban}</span></td>
+        <td style="text-align:center">${h.umaban}</td>
+        <td><strong>${h.bamei}</strong></td>
+        <td>${h.barei}</td><td>${h.jockey}</td>
+        <td style="text-align:right">${h.kinryo}</td>
+        <td style="font-size:12px;color:#666">${h.trainer}</td>
+        <td style="text-align:right">${h.odds}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="color:#aaa;text-align:center">出走馬データがありません</td></tr>';
 }
 
 async function fetchRaceDetails() {
-  const raceId = document.getElementById('shutuba-race-id').value.trim();
-  if (!raceId) return;
-
-  switchShutubTab('tab-shutuba-detail',
-    document.querySelectorAll('#shutuba-result .tab')[1]);
-
-  showMsg('detail-msg', '<span class="spinner"></span>blood統・近走を一括取得中...', 'info');
+  const id = document.getElementById('shutuba-race-id').value.trim();
+  if (!id) return;
+  switchShutubTab('tab-shutuba-detail', document.querySelectorAll('#shutuba-result .tab')[1]);
+  showMsg('detail-msg', '<span class="spinner"></span>血統・近走を一括取得中...', 'info');
   document.getElementById('btn-fetch-detail').disabled = true;
-
-  const res = await api('POST', `/api/shutuba/${raceId}/fetch_details`, {});
+  const r = await api('POST', `/api/shutuba/${id}/fetch_details`, {});
   document.getElementById('btn-fetch-detail').disabled = false;
-
-  if (!res.success) {
-    showMsg('detail-msg', `❌ ${res.message}`, 'err');
-    return;
-  }
-
-  let msg = `✅ ${res.message}`;
-  if (res.errors && res.errors.length) {
-    msg += '<br><small style="color:#ea4335">' + res.errors.join('<br>') + '</small>';
-  }
-  showMsg('detail-msg', msg, res.errors && res.errors.length ? 'info' : 'ok');
-  loadRaceDetail(raceId);
-}
-
-async function loadRaceDetail(raceId) {
-  if (!raceId) return;
-  const horses = await api('GET', `/api/shutuba/${raceId}/horses_with_detail`);
+  if (!r.success) { showMsg('detail-msg', `❌ ${r.message}`, 'err'); return; }
+  showMsg('detail-msg', `✅ ${r.message}`, 'ok');
+  const horses = await api('GET', `/api/shutuba/${id}/horses_with_detail`);
   renderDetailList(horses);
 }
 
 function renderDetailList(horses) {
   const el = document.getElementById('detail-list');
-  if (!horses.length) {
-    el.innerHTML = '<div style="color:#aaa;padding:16px">データがありません</div>'; return;
-  }
-
+  if (!horses.length) { el.innerHTML = '<div style="color:#aaa;padding:16px">データがありません</div>'; return; }
   el.innerHTML = horses.map(h => {
     const hasDetail = h.father || h.mother;
     const bloodHtml = hasDetail ? `
@@ -648,53 +587,25 @@ function renderDetailList(horses) {
         </tr>
         <tr><td style="padding:3px 8px;background:#f8f9fa;border:1px solid #ddd">${h.mother_mother||'─'}</td></tr>
       </table>` : '<div style="color:#aaa;font-size:12px;margin-top:6px">未取得</div>';
-
     const races = h.recent_races || [];
     const racesHtml = races.length ? `
       <div style="overflow-x:auto;margin-top:8px">
         <table style="font-size:11px;border-collapse:collapse;white-space:nowrap">
-          <thead>
-            <tr style="background:#f8f9fa">
-              <th style="padding:3px 6px;border:1px solid #ddd">日付</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">開催</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">レース名</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">頭</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">馬番</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">人気</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">着順</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">騎手</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">斤量</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">距離</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">馬場</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">タイム</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">着差</th>
-              <th style="padding:3px 6px;border:1px solid #ddd">上3F</th>
-            </tr>
-          </thead>
+          <thead><tr style="background:#f8f9fa">
+            ${['日付','開催','レース名','頭','馬番','人気','着順','騎手','斤量','距離','馬場','タイム','着差','上3F']
+               .map(h=>`<th style="padding:3px 6px;border:1px solid #ddd">${h}</th>`).join('')}
+          </tr></thead>
           <tbody>
             ${races.map(r => {
-              const chakuColor = r.chakun === '1' ? '#34a853' : r.chakun === '2' ? '#1a73e8' : r.chakun === '3' ? '#ea4335' : '#333';
-              return `<tr>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.date}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.place}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.race_name}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:center">${r.num_horses}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:center">${r.umaban}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:center">${r.ninki}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:center;font-weight:bold;color:${chakuColor}">${r.chakun}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.jockey}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:right">${r.kinryo}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.distance}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.baba}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.time}</td>
-                <td style="padding:3px 6px;border:1px solid #eee">${r.chakusa}</td>
-                <td style="padding:3px 6px;border:1px solid #eee;text-align:right">${r.agari}</td>
-              </tr>`;
+              const cc = r.chakun==='1'?'#34a853':r.chakun==='2'?'#1a73e8':r.chakun==='3'?'#ea4335':'#333';
+              return `<tr>${[r.date,r.place,r.race_name,r.num_horses,r.umaban,r.ninki,
+                `<span style="font-weight:bold;color:${cc}">${r.chakun}</span>`,
+                r.jockey,r.kinryo,r.distance,r.baba,r.time,r.chakusa,r.agari]
+                .map(v=>`<td style="padding:3px 6px;border:1px solid #eee">${v}</td>`).join('')}</tr>`;
             }).join('')}
           </tbody>
         </table>
       </div>` : '<div style="color:#aaa;font-size:12px;margin-top:6px">未取得</div>';
-
     return `
       <div style="border:1px solid #e0e0e0;border-radius:6px;padding:12px;margin-bottom:12px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
@@ -705,59 +616,63 @@ function renderDetailList(horses) {
         </div>
         <div style="font-size:12px;font-weight:bold;color:#555;margin-bottom:2px">■ 血統</div>
         ${bloodHtml}
-        <div style="font-size:12px;font-weight:bold;color:#555;margin:8px 0 2px">■ 近走（直近10走）</div>
+        <div style="font-size:12px;font-weight:bold;color:#555;margin:8px 0 2px">■ 近走</div>
         ${racesHtml}
       </div>`;
   }).join('');
 }
 
-// ══ 予想グループ ════════════════════════════════════════════════════════════
-let _forecastGroups = [];
+// ══ 予想グループ ══════════════════════════════════════════════════════════════
+let _groups = [];
+
+function toggleGroupModelField() {
+  const t = document.getElementById('group-type-input').value;
+  document.getElementById('group-model-wrap').style.display = t === 'ai' ? '' : 'none';
+}
 
 async function loadForecastGroups() {
-  const groups = await api('GET', '/api/forecast_groups');
-  _forecastGroups = groups;
+  _groups = await api('GET', '/api/forecast_groups');
 
-  // 買い目ページのグループセレクト更新
+  // 買い目ページのセレクト
   const sel = document.getElementById('bet-forecast-select');
   if (sel) {
     const cur = sel.value;
     sel.innerHTML = '<option value="">グループなし</option>'
-      + groups.map(g =>
-          `<option value="${g.id}" data-color="${g.color}">${g.name}</option>`
-        ).join('');
+      + _groups.map(g => `<option value="${g.id}" data-color="${g.color}" data-type="${g.type}" data-model="${g.ai_model||''}">${g.name}</option>`).join('');
     if (cur) sel.value = cur;
     updateGroupIndicator();
   }
 
-  renderGroupList(groups);
+  renderGroupList(_groups);
 }
 
-async function loadForecastGroupsForSummary() {
+async function loadForecastGroupsForFilter(selId) {
   const groups = await api('GET', '/api/forecast_groups');
-  const sel = document.getElementById('summary-forecast');
+  const sel = document.getElementById(selId);
   if (!sel) return;
   const cur = sel.value;
-  sel.innerHTML = '<option value="">全グループ</option>'
-    + '<option value="0">グループなし</option>'
+  sel.innerHTML = '<option value="">全グループ</option><option value="0">グループなし</option>'
     + groups.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   if (cur !== undefined) sel.value = cur;
 }
 
 function updateGroupIndicator() {
   const sel = document.getElementById('bet-forecast-select');
-  const indicator = document.getElementById('bet-group-indicator');
-  const dot = document.getElementById('bet-group-dot');
-  const name = document.getElementById('bet-group-name');
-  if (!sel) return;
+  const ind = document.getElementById('bet-group-indicator');
+  if (!sel || !ind) return;
   const opt = sel.options[sel.selectedIndex];
   if (sel.value && opt) {
-    dot.style.background = opt.dataset.color || '#888';
-    name.textContent = opt.textContent;
-    indicator.style.display = 'flex';
-    indicator.style.alignItems = 'center';
+    document.getElementById('bet-group-dot').style.background = opt.dataset.color || '#888';
+    document.getElementById('bet-group-name').textContent = opt.textContent;
+    const t = opt.dataset.type || 'ai';
+    const tb = document.getElementById('bet-group-type');
+    tb.textContent = t === 'ai' ? '🤖 AI' : '👤 自分';
+    tb.className = 'type-badge ' + (t === 'ai' ? 'type-ai' : 'type-self');
+    const model = opt.dataset.model;
+    document.getElementById('bet-group-model').textContent = model ? `(${model})` : '';
+    ind.style.display = 'flex';
   } else {
-    indicator.style.display = 'none';
+    ind.style.display = 'none';
   }
 }
 
@@ -768,80 +683,174 @@ function renderGroupList(groups) {
     el.innerHTML = '<div style="color:#aaa;padding:12px 0">グループがまだありません</div>';
     return;
   }
-  el.innerHTML = groups.map(g => `
+  el.innerHTML = groups.map(g => {
+    const tb = g.type === 'ai' ? `<span class="type-badge type-ai">🤖 AI</span>` : `<span class="type-badge type-self">👤 自分</span>`;
+    const model = g.ai_model ? `<span style="font-size:11px;color:#888">${g.ai_model}</span>` : '';
+    return `
     <div class="group-item">
       <span class="group-dot" style="background:${g.color};width:14px;height:14px"></span>
-      <span style="flex:1;font-weight:bold">${g.name}</span>
-      <span style="font-size:11px;color:#888">${g.created_at || ''}</span>
-      <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id},'${g.name}')">削除</button>
-    </div>`).join('');
+      <span style="font-weight:bold;flex:0 0 auto">${g.name}</span>
+      ${tb} ${model}
+      <span style="flex:1"></span>
+      <span style="font-size:11px;color:#aaa">${(g.created_at||'').slice(0,10)}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteGroup(${g.id},'${g.name.replace(/'/g,"\\'")}')">削除</button>
+    </div>`;
+  }).join('');
 }
 
 async function createGroup() {
-  const name = document.getElementById('group-name-input').value.trim();
+  const name  = document.getElementById('group-name-input').value.trim();
+  const type_ = document.getElementById('group-type-input').value;
+  const model = document.getElementById('group-model-input')?.value.trim() || '';
   const color = document.getElementById('group-color-input').value;
   if (!name) { showMsg('group-msg', 'グループ名を入力してください', 'err'); return; }
-  const res = await api('POST', '/api/forecast_groups', { name, color });
-  if (res.success) {
+  const r = await api('POST', '/api/forecast_groups', { name, color, type: type_, ai_model: model });
+  if (r.success) {
     document.getElementById('group-name-input').value = '';
+    document.getElementById('group-model-input').value = '';
     showMsg('group-msg', `✅ グループ「${name}」を作成しました`, 'ok');
     loadForecastGroups();
     loadCompare();
+    loadPredRaceSelect();
   } else {
-    showMsg('group-msg', `❌ ${res.message}`, 'err');
+    showMsg('group-msg', `❌ ${r.message}`, 'err');
   }
 }
 
 async function deleteGroup(id, name) {
-  if (!confirm(`グループ「${name}」を削除しますか？\n（このグループの買い目は「グループなし」になります）`)) return;
+  if (!confirm(`グループ「${name}」を削除しますか？\n（このグループの買い目・予想記録は削除されます）`)) return;
   await api('DELETE', `/api/forecast_groups/${id}`);
   showMsg('group-msg', `「${name}」を削除しました`, 'ok');
   loadForecastGroups();
   loadCompare();
 }
 
-// ══ 買い目 ══════════════════════════════════════════════════════════════════
-let currentBets = [];
-
+// ══ 買い目入力 ════════════════════════════════════════════════════════════════
 async function loadBetRaceSelect() {
   const races = await api('GET', '/api/races');
   const sel = document.getElementById('bet-race-select');
   sel.innerHTML = '<option value="">── レースを選択 ──</option>'
-    + races.map(r =>
-        `<option value="${r.race_id}">[${r.race_id}] ${r.race_name || r.jo_name + ' ' + r.race_no + 'R'}</option>`
-      ).join('');
+    + races.map(r => `<option value="${r.race_id}">[${r.race_id}] ${r.race_name||r.jo_name+' '+r.race_no+'R'}</option>`).join('');
 }
 
-async function loadBetsForRace() {
+async function onBetRaceChange() {
   const raceId = document.getElementById('bet-race-select').value;
-  if (!raceId) { document.getElementById('bet-list').innerHTML = ''; return; }
-
+  if (!raceId) {
+    document.getElementById('bet-list').innerHTML = '';
+    document.getElementById('bet-race-info').textContent = '';
+    hidePredictionCard();
+    return;
+  }
   const race = await api('GET', `/api/shutuba/${raceId}`);
-  const info = race.race ? `${race.race.race_name}  ${race.race.race_data}` : raceId;
-  document.getElementById('bet-race-info').textContent = info;
-
+  document.getElementById('bet-race-info').textContent =
+    race.race ? `${race.race.race_name}  ${race.race.race_data}` : raceId;
   const bets = await api('GET', `/api/bets?race_id=${raceId}`);
-  currentBets = bets;
   renderBetList(bets);
+  updatePredictionCard();
+}
+
+function onBetGroupChange() {
+  updateGroupIndicator();
+  updatePredictionCard();
+}
+
+// ── 予想記録フォーム ──
+function hidePredictionCard() {
+  document.getElementById('prediction-card').style.display = 'none';
+}
+
+async function updatePredictionCard() {
+  const raceId  = document.getElementById('bet-race-select').value;
+  const groupId = document.getElementById('bet-forecast-select').value;
+  const card    = document.getElementById('prediction-card');
+
+  if (!raceId || !groupId) { card.style.display = 'none'; return; }
+
+  card.style.display = 'block';
+  showMsg('pred-save-msg', '');
+
+  const group = _groups.find(g => g.id == groupId);
+  if (!group) return;
+
+  // 既存データを取得
+  const records = await api('GET', `/api/predictions?race_id=${raceId}&forecast_group_id=${groupId}`);
+  const rec = records[0] || {};
+
+  const wrap = document.getElementById('prediction-form-wrap');
+  if (group.type === 'ai') {
+    wrap.innerHTML = `
+      <div class="pred-block">
+        <div class="pred-block-header">
+          <span class="group-dot" style="background:${group.color}"></span>
+          <strong>${group.name}</strong>
+          <span class="type-badge type-ai">🤖 AI予想</span>
+          ${group.ai_model ? `<span style="font-size:12px;color:#888">${group.ai_model}</span>` : ''}
+        </div>
+        <div class="pred-section-label">プロンプト（AIへの入力）</div>
+        <textarea id="pred-prompt" rows="5" placeholder="AIに送ったプロンプトをここに貼り付け...">${escHtml(rec.prompt||'')}</textarea>
+        <div class="pred-section-label" style="margin-top:10px">AI の回答</div>
+        <textarea id="pred-output" rows="6" placeholder="AIの予想・分析結果をここに貼り付け...">${escHtml(rec.ai_output||'')}</textarea>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="pred-block">
+        <div class="pred-block-header">
+          <span class="group-dot" style="background:${group.color}"></span>
+          <strong>${group.name}</strong>
+          <span class="type-badge type-self">👤 自分の予想</span>
+        </div>
+        <div class="pred-section-label">予想メモ</div>
+        <textarea id="pred-memo" rows="6" placeholder="予想の根拠・注目ポイントなどを自由に記録...">${escHtml(rec.memo||'')}</textarea>
+      </div>`;
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function savePrediction() {
+  const raceId  = document.getElementById('bet-race-select').value;
+  const groupId = document.getElementById('bet-forecast-select').value;
+  if (!raceId || !groupId) return;
+
+  const group = _groups.find(g => g.id == groupId);
+  const body = { race_id: raceId, forecast_group_id: parseInt(groupId) };
+  if (group?.type === 'ai') {
+    body.prompt    = document.getElementById('pred-prompt')?.value || '';
+    body.ai_output = document.getElementById('pred-output')?.value || '';
+    body.memo      = '';
+  } else {
+    body.prompt    = '';
+    body.ai_output = '';
+    body.memo      = document.getElementById('pred-memo')?.value || '';
+  }
+
+  const r = await api('POST', '/api/predictions', body);
+  showMsg('pred-save-msg', r.success ? '✅ 保存しました' : `❌ ${r.message}`, r.success ? 'ok' : 'err');
+}
+
+function clearPredictionForm() {
+  ['pred-prompt','pred-output','pred-memo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  showMsg('pred-save-msg', '');
 }
 
 function renderBetList(bets) {
   const el = document.getElementById('bet-list');
-  if (!bets.length) {
-    el.innerHTML = '<div style="color:#aaa;padding:12px">まだ買い目がありません</div>';
-    return;
-  }
+  if (!bets.length) { el.innerHTML = '<div style="color:#aaa;padding:12px">まだ買い目がありません</div>'; return; }
   el.innerHTML = bets.map(b => {
-    const groupTag = b.group_name
+    const gTag = b.group_name
       ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f0f4ff;border-radius:3px;padding:1px 6px;font-size:11px">
-           <span class="group-dot" style="background:${b.group_color||'#888'};width:8px;height:8px"></span>${b.group_name}
-         </span>`
-      : '<span style="font-size:11px;color:#aaa">グループなし</span>';
+           <span class="group-dot" style="background:${b.group_color||'#888'};width:8px;height:8px"></span>${b.group_name}</span>`
+      : '<span style="font-size:11px;color:#aaa">なし</span>';
     return `
     <div class="bet-item">
       <span class="ticket">${b.ticket_type}</span>
       <span class="comb">${b.combination}</span>
-      ${groupTag}
+      ${gTag}
       <span class="price">¥${Number(b.purchase).toLocaleString()}</span>
       <button class="btn btn-danger btn-sm" onclick="deleteBet(${b.id})">削除</button>
     </div>`;
@@ -853,46 +862,41 @@ async function addBet() {
   if (!raceId) { showMsg('bet-msg', 'レースを選択してください', 'err'); return; }
   const combo = document.getElementById('bet-combination').value.trim();
   if (!combo)  { showMsg('bet-msg', '買い目を入力してください', 'err'); return; }
-
-  const forecastSel = document.getElementById('bet-forecast-select');
-  const forecastId = forecastSel && forecastSel.value ? parseInt(forecastSel.value) : null;
-
-  const res = await api('POST', '/api/bets', {
-    race_id:     raceId,
+  const fSel = document.getElementById('bet-forecast-select');
+  const r = await api('POST', '/api/bets', {
+    race_id: raceId,
     ticket_type: document.getElementById('bet-ticket').value,
     combination: combo,
-    purchase:    parseInt(document.getElementById('bet-purchase').value) || 100,
-    forecast_id: forecastId,
+    purchase: parseInt(document.getElementById('bet-purchase').value) || 100,
+    forecast_id: fSel.value ? parseInt(fSel.value) : null,
   });
-  if (res.success) {
+  if (r.success) {
     document.getElementById('bet-combination').value = '';
     showMsg('bet-msg', '✅ 買い目を保存しました', 'ok');
-    loadBetsForRace();
+    onBetRaceChange();
   } else {
-    showMsg('bet-msg', `❌ ${res.message || 'エラーが発生しました'}`, 'err');
+    showMsg('bet-msg', `❌ ${r.message||'エラーが発生しました'}`, 'err');
   }
 }
 
-async function deleteBet(betId) {
-  await api('DELETE', `/api/bets/${betId}`);
-  loadBetsForRace();
+async function deleteBet(id) {
+  await api('DELETE', `/api/bets/${id}`);
+  onBetRaceChange();
 }
 
-// ══ 結果取得 ════════════════════════════════════════════════════════════════
+// ══ 結果取得 ══════════════════════════════════════════════════════════════════
 async function fetchResults() {
-  showMsg('result-msg', '<span class="spinner"></span>結果を取得中（しばらくお待ちください）...', 'info');
-  const res = await api('POST', '/api/results/fetch_pending');
-  showMsg('result-msg', res.success ? `✅ ${res.message}` : `❌ ${res.message}`,
-          res.success ? 'ok' : 'err');
-  if (res.success) loadAllBets();
+  showMsg('result-msg', '<span class="spinner"></span>結果を取得中...', 'info');
+  const r = await api('POST', '/api/results/fetch_pending');
+  showMsg('result-msg', r.success ? `✅ ${r.message}` : `❌ ${r.message}`, r.success ? 'ok' : 'err');
+  if (r.success) loadAllBets();
 }
 
 async function refetchResults() {
-  showMsg('result-msg', '<span class="spinner"></span>強制再取得中（取得済みも含めて再処理）...', 'info');
-  const res = await api('POST', '/api/results/refetch', {});
-  showMsg('result-msg', res.success ? `✅ ${res.message}` : `❌ ${res.message}`,
-          res.success ? 'ok' : 'err');
-  if (res.success) loadAllBets();
+  showMsg('result-msg', '<span class="spinner"></span>強制再取得中...', 'info');
+  const r = await api('POST', '/api/results/refetch', {});
+  showMsg('result-msg', r.success ? `✅ ${r.message}` : `❌ ${r.message}`, r.success ? 'ok' : 'err');
+  if (r.success) loadAllBets();
 }
 
 async function loadAllBets() {
@@ -903,110 +907,76 @@ async function loadAllBets() {
     return;
   }
   tbody.innerHTML = bets.map(b => {
-    const balance = b.payout - b.purchase;
-    const resultIcon = b.result === '◎' ? '◎' : b.result === '✗' ? '✗' : '─';
-    const resultColor = b.result === '◎' ? '#34a853' : b.result === '✗' ? '#ea4335' : '#888';
-    const groupCell = b.group_name
+    const bal = b.payout - b.purchase;
+    const ri  = b.result === '◎' ? '◎' : b.result === '✗' ? '✗' : '─';
+    const rc  = b.result === '◎' ? '#34a853' : b.result === '✗' ? '#ea4335' : '#888';
+    const gc  = b.group_name
       ? `<span style="display:inline-flex;align-items:center;gap:4px;font-size:11px">
-           <span class="group-dot" style="background:${b.group_color||'#888'}"></span>${b.group_name}
-         </span>`
-      : '<span style="font-size:11px;color:#ccc">─</span>';
+           <span class="group-dot" style="background:${b.group_color||'#888'}"></span>${b.group_name}</span>`
+      : '<span style="color:#ccc;font-size:11px">─</span>';
     return `<tr>
       <td><code style="font-size:11px">${b.race_id}</code></td>
-      <td style="font-size:12px">${b.race_name || '─'}</td>
-      <td>${groupCell}</td>
+      <td style="font-size:12px">${b.race_name||'─'}</td>
+      <td>${gc}</td>
       <td><span style="background:#1a73e8;color:#fff;padding:2px 6px;border-radius:3px;font-size:11px;font-weight:bold">${b.ticket_type}</span></td>
       <td>${b.combination}</td>
       <td style="text-align:right">¥${Number(b.purchase).toLocaleString()}</td>
-      <td style="text-align:center;font-weight:bold;color:${resultColor}">${resultIcon}</td>
-      <td style="text-align:right">${b.payout ? '¥' + Number(b.payout).toLocaleString() : '─'}</td>
-      <td style="text-align:right" class="${balanceClass(balance)}">
-        ${b.result ? fmtYen(balance) : '─'}
-      </td>
-      <td>
-        ${b.result
-          ? `<button class="btn btn-primary btn-sm" onclick="showPayout('${b.race_id}','${b.race_name||b.race_id}')">配当</button>`
-          : ''}
+      <td style="text-align:center;font-weight:bold;color:${rc}">${ri}</td>
+      <td style="text-align:right">${b.payout?'¥'+Number(b.payout).toLocaleString():'─'}</td>
+      <td style="text-align:right" class="${balanceClass(bal)}">${b.result?fmtYen(bal):'─'}</td>
+      <td>${b.result?`<button class="btn btn-primary btn-sm" onclick="showPayout('${b.race_id}','${(b.race_name||b.race_id).replace(/'/g,"\\'")}')">配当</button>`:''}
       </td>
     </tr>`;
   }).join('');
 }
 
-// ══ 収支集計 ════════════════════════════════════════════════════════════════
-function initSummaryYears() {
-  const sel = document.getElementById('summary-year');
-  const curYear = new Date().getFullYear();
-  sel.innerHTML = '<option value="">全期間</option>';
-  for (let y = curYear; y >= curYear - 3; y--) {
-    sel.innerHTML += `<option value="${y}">${y}年</option>`;
-  }
-}
-
+// ══ 収支集計 ══════════════════════════════════════════════════════════════════
 async function loadSummary() {
   const year = document.getElementById('summary-year').value;
   const fid  = document.getElementById('summary-forecast').value;
   let path = '/api/summary';
-  const params = [];
-  if (year) params.push(`year=${year}`);
-  if (fid !== '') params.push(`forecast_id=${fid}`);
-  if (params.length) path += '?' + params.join('&');
+  const p = [];
+  if (year) p.push(`year=${year}`);
+  if (fid !== '') p.push(`forecast_id=${fid}`);
+  if (p.length) path += '?' + p.join('&');
   const s = await api('GET', path);
 
-  const cards = [
-    { lbl: '総購入金額', val: `¥${Number(s.total_bet).toLocaleString()}`, cls: '' },
-    { lbl: '総払戻金額', val: `¥${Number(s.total_payout).toLocaleString()}`, cls: '' },
-    { lbl: '収支',       val: fmtYen(s.balance), cls: balanceClass(s.balance) },
-    { lbl: '回収率',     val: `${s.recovery_rate}%`, cls: s.recovery_rate >= 100 ? 'plus' : 'minus' },
-    { lbl: '購入回数',   val: `${s.total_count}回`, cls: '' },
-    { lbl: '的中回数',   val: `${s.hit_count}回`, cls: '' },
-    { lbl: '的中率',     val: `${s.hit_rate}%`, cls: '' },
-  ];
-  document.getElementById('summary-cards').innerHTML = cards.map(c =>
-    `<div class="summary-card">
-      <div class="val ${c.cls}">${c.val}</div>
-      <div class="lbl">${c.lbl}</div>
-    </div>`
-  ).join('');
+  document.getElementById('summary-cards').innerHTML = [
+    { lbl:'総購入金額', val:`¥${Number(s.total_bet).toLocaleString()}`, cls:'' },
+    { lbl:'総払戻金額', val:`¥${Number(s.total_payout).toLocaleString()}`, cls:'' },
+    { lbl:'収支',       val:fmtYen(s.balance), cls:balanceClass(s.balance) },
+    { lbl:'回収率',     val:`${s.recovery_rate}%`, cls:s.recovery_rate>=100?'plus':'minus' },
+    { lbl:'購入回数',   val:`${s.total_count}回`, cls:'' },
+    { lbl:'的中回数',   val:`${s.hit_count}回`, cls:'' },
+    { lbl:'的中率',     val:`${s.hit_rate}%`, cls:'' },
+  ].map(c=>`<div class="summary-card"><div class="val ${c.cls}">${c.val}</div><div class="lbl">${c.lbl}</div></div>`).join('');
 
   document.getElementById('monthly-body').innerHTML = s.monthly.length
     ? s.monthly.map(m => {
-        const bal = (m.payout || 0) - (m.bet || 0);
-        const rr  = m.bet ? ((m.payout || 0) / m.bet * 100).toFixed(1) : '─';
-        return `<tr>
-          <td>${m.month}</td>
+        const bal=(m.payout||0)-(m.bet||0);
+        const rr=m.bet?((m.payout||0)/m.bet*100).toFixed(1):'─';
+        return `<tr><td>${m.month}</td>
           <td style="text-align:right">¥${Number(m.bet||0).toLocaleString()}</td>
           <td style="text-align:right">¥${Number(m.payout||0).toLocaleString()}</td>
           <td style="text-align:right" class="${balanceClass(bal)}">${fmtYen(bal)}</td>
-          <td style="text-align:right">${rr}%</td>
-        </tr>`;
+          <td style="text-align:right">${rr}%</td></tr>`;
       }).join('')
     : '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:16px">データなし</td></tr>';
 
   document.getElementById('ticket-body').innerHTML = s.by_ticket.length
     ? s.by_ticket.map(t => {
-        const hr = t.total ? (t.hit / t.total * 100).toFixed(1) : '0.0';
-        const rr = t.bet   ? (t.payout / t.bet * 100).toFixed(1) : '0.0';
-        return `<tr>
-          <td><strong>${t.ticket_type}</strong></td>
+        const hr=t.total?(t.hit/t.total*100).toFixed(1):'0.0';
+        const rr=t.bet?(t.payout/t.bet*100).toFixed(1):'0.0';
+        return `<tr><td><strong>${t.ticket_type}</strong></td>
           <td style="text-align:right">¥${Number(t.bet||0).toLocaleString()}</td>
           <td style="text-align:right">¥${Number(t.payout||0).toLocaleString()}</td>
           <td style="text-align:right">${hr}%</td>
-          <td style="text-align:right" class="${parseFloat(rr)>=100?'plus':'minus'}">${rr}%</td>
-        </tr>`;
+          <td style="text-align:right" class="${parseFloat(rr)>=100?'plus':'minus'}">${rr}%</td></tr>`;
       }).join('')
     : '<tr><td colspan="5" style="color:#aaa;text-align:center;padding:16px">データなし</td></tr>';
 }
 
-// ══ 予想比較 ════════════════════════════════════════════════════════════════
-function initCompareYears() {
-  const sel = document.getElementById('compare-year');
-  const curYear = new Date().getFullYear();
-  sel.innerHTML = '<option value="">全期間</option>';
-  for (let y = curYear; y >= curYear - 3; y--) {
-    sel.innerHTML += `<option value="${y}">${y}年</option>`;
-  }
-}
-
+// ══ 予想比較 ══════════════════════════════════════════════════════════════════
 async function loadCompare() {
   const year = document.getElementById('compare-year')?.value || '';
   const data = await api('GET', '/api/summary/compare' + (year ? `?year=${year}` : ''));
@@ -1016,61 +986,71 @@ async function loadCompare() {
 function renderCompareTable(groups) {
   const el = document.getElementById('compare-table-wrap');
   if (!groups.length) {
-    el.innerHTML = '<div style="color:#aaa;padding:16px">データがありません。先に買い目を登録してください。</div>';
+    el.innerHTML = '<div style="color:#aaa;padding:16px">データがありません。買い目を登録してください。</div>';
     return;
   }
 
+  // 回収率で順位付け
+  const ranked = groups.map((g, i) => ({ ...g, _origIdx: i }))
+    .sort((a, b) => b.recovery_rate - a.recovery_rate)
+    .map((g, i) => ({ ...g, rank: i + 1 }))
+    .sort((a, b) => a._origIdx - b._origIdx);
+
+  const RANK_ICONS = ['🥇', '🥈', '🥉'];
   const METRICS = [
-    { key: 'total_bet',     label: '購入合計',
-      fmt: v => '¥' + Number(v).toLocaleString(), cls: () => '' },
-    { key: 'total_payout',  label: '払戻合計',
-      fmt: v => '¥' + Number(v).toLocaleString(), cls: () => '' },
-    { key: 'balance',       label: '収支',
-      fmt: v => fmtYen(v), cls: v => balanceClass(v) },
-    { key: 'recovery_rate', label: '回収率',
-      fmt: v => v + '%', cls: v => parseFloat(v) >= 100 ? 'plus' : 'minus' },
-    { key: 'total_count',   label: '購入回数',
-      fmt: v => v + '回', cls: () => '' },
-    { key: 'hit_count',     label: '的中回数',
-      fmt: v => v + '回', cls: () => '' },
-    { key: 'hit_rate',      label: '的中率',
-      fmt: v => v + '%', cls: () => '' },
+    { key:'rank',         label:'順位（回収率）',fmt:v=>RANK_ICONS[v-1]||`${v}位`, cls:()=>'' },
+    { key:'total_bet',    label:'購入合計',    fmt:v=>'¥'+Number(v).toLocaleString(), cls:()=>'' },
+    { key:'total_payout', label:'払戻合計',    fmt:v=>'¥'+Number(v).toLocaleString(), cls:()=>'' },
+    { key:'balance',      label:'収支',        fmt:v=>fmtYen(v), cls:v=>balanceClass(v) },
+    { key:'recovery_rate',label:'回収率',      fmt:v=>v+'%', cls:v=>parseFloat(v)>=100?'plus':'minus' },
+    { key:'total_count',  label:'購入回数',    fmt:v=>v+'回', cls:()=>'' },
+    { key:'hit_count',    label:'的中回数',    fmt:v=>v+'回', cls:()=>'' },
+    { key:'hit_rate',     label:'的中率',      fmt:v=>v+'%', cls:()=>'' },
   ];
 
-  const headerCells = groups.map(g => `
-    <th style="text-align:center;min-width:120px">
-      <div class="group-header">
-        <span class="group-dot" style="background:${g.group_color}"></span>
-        <span>${g.group_name}</span>
+  const header = ranked.map(g => {
+    const tb = g.forecast_id !== null
+      ? (g.group_color ? `<span class="group-dot" style="background:${g.group_color};width:10px;height:10px"></span>` : '')
+      : '';
+    return `<th style="text-align:center;min-width:130px">
+      <div style="display:flex;align-items:center;justify-content:center;gap:5px">
+        ${tb}<span>${g.group_name}</span>
       </div>
-    </th>`).join('');
-
-  const rows = METRICS.map(m => {
-    const cells = groups.map(g => {
-      const val = g[m.key];
-      return `<td class="${m.cls(val)}">${m.fmt(val)}</td>`;
-    }).join('');
-    return `<tr><td style="font-weight:bold;white-space:nowrap;background:#f8f9fa;padding:8px 12px">${m.label}</td>${cells}</tr>`;
+      ${g.rank<=3?`<div style="font-size:16px">${RANK_ICONS[g.rank-1]}</div>`:''}
+    </th>`;
   }).join('');
 
-  // 差分行を追加（グループが2つ以上ある場合）
+  const rows = METRICS.map(m => {
+    const cells = ranked.map(g => {
+      const val = g[m.key];
+      const rrCls = m.key==='recovery_rate' && g.rank<=3 ? `compare-table rank-${g.rank}` : '';
+      return `<td class="${m.cls(val)}" style="text-align:right;${rrCls?'font-weight:bold':''}">${m.fmt(val)}</td>`;
+    }).join('');
+    return `<tr>
+      <td class="metric-cell">${m.label}</td>
+      ${cells}
+    </tr>`;
+  }).join('');
+
+  // 差分行（グループが2つ以上で、1位グループとの差）
+  const top = ranked.find(g => g.rank === 1);
   let diffRows = '';
-  if (groups.length >= 2) {
-    diffRows = METRICS.map(m => {
-      const baseVal = groups[0][m.key];
-      const cells = groups.map((g, i) => {
-        if (i === 0) return `<td style="color:#aaa;text-align:right">─</td>`;
-        const diff = g[m.key] - baseVal;
-        const isYen = m.key === 'total_bet' || m.key === 'total_payout' || m.key === 'balance';
-        const isRate = m.key === 'recovery_rate' || m.key === 'hit_rate';
-        let diffStr = '';
-        if (isYen) diffStr = (diff >= 0 ? '+¥' : '-¥') + Math.abs(diff).toLocaleString();
-        else if (isRate) diffStr = (diff >= 0 ? '+' : '') + diff.toFixed(1) + '%';
-        else diffStr = (diff >= 0 ? '+' : '') + diff;
-        return `<td class="${diff > 0 ? 'plus' : diff < 0 ? 'minus' : 'neutral'}" style="font-size:12px">${diffStr}</td>`;
+  if (ranked.length >= 2 && top) {
+    const diffMetrics = [
+      { key:'balance',       label:'収支の差',  isYen:true },
+      { key:'recovery_rate', label:'回収率の差', isPct:true },
+    ];
+    diffRows = diffMetrics.map(m => {
+      const cells = ranked.map(g => {
+        if (g.rank === 1) return `<td style="text-align:right;color:#aaa;font-size:12px">基準</td>`;
+        const diff = g[m.key] - top[m.key];
+        let str = '';
+        if (m.isYen) str = (diff>=0?'+¥':'-¥') + Math.abs(diff).toLocaleString();
+        else str = (diff>=0?'+':'') + diff.toFixed(1) + '%';
+        return `<td style="text-align:right;font-size:12px" class="${diff>0?'plus':diff<0?'minus':'neutral'}">${str}</td>`;
       }).join('');
       return `<tr style="background:#fafbff">
-        <td style="font-size:11px;color:#888;background:#f8f9fa;padding:4px 12px">↕ ${groups[0].group_name}との差</td>
+        <td class="metric-cell" style="font-size:11px;color:#888">↕ ${top.group_name}との差<br><span style="font-size:10px">${m.label}</span></td>
         ${cells}
       </tr>`;
     }).join('');
@@ -1079,50 +1059,93 @@ function renderCompareTable(groups) {
   el.innerHTML = `
     <div class="tbl-wrap">
       <table class="compare-table">
-        <thead><tr><th style="text-align:left;background:#f8f9fa">指標</th>${headerCells}</tr></thead>
+        <thead><tr><th style="text-align:left;background:#f8f9fa;min-width:120px">指標</th>${header}</tr></thead>
         <tbody>
           ${rows}
-          ${diffRows ? '<tr><td colspan="' + (groups.length+1) + '" style="padding:4px 0;background:#f0f2f5"></td></tr>' + diffRows : ''}
+          ${diffRows ? '<tr><td colspan="'+(ranked.length+1)+'" style="padding:3px;background:#ececec"></td></tr>'+diffRows : ''}
         </tbody>
       </table>
     </div>`;
 }
 
-// ══ 払戻モーダル ══════════════════════════════════════════════════════════
+// ══ 予想記録ビューア ══════════════════════════════════════════════════════════
+async function loadPredRaceSelect() {
+  const races = await api('GET', '/api/races');
+  const sel = document.getElementById('pred-race-select');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">── レースを選択 ──</option>'
+    + races.map(r => `<option value="${r.race_id}">${r.race_id} ${r.race_name||r.jo_name+' '+r.race_no+'R'}</option>`).join('');
+}
+
+async function loadPredictions() {
+  const raceId = document.getElementById('pred-race-select')?.value;
+  const el = document.getElementById('predictions-view');
+  if (!raceId) {
+    el.innerHTML = '<div style="color:#aaa;font-size:13px">レースを選択すると各グループの予想内容が表示されます</div>';
+    return;
+  }
+
+  const records = await api('GET', `/api/predictions?race_id=${raceId}`);
+  if (!records.length) {
+    el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:8px 0">このレースの予想記録はありません</div>';
+    return;
+  }
+
+  el.innerHTML = records.map(rec => {
+    const color = rec.group_color || '#888';
+    const isAI  = rec.group_type === 'ai';
+    const model = rec.ai_model ? `<span style="font-size:11px;color:#888;margin-left:4px">${rec.ai_model}</span>` : '';
+    const typeBadge = isAI
+      ? `<span class="type-badge type-ai">🤖 AI</span>${model}`
+      : `<span class="type-badge type-self">👤 自分</span>`;
+
+    const content = isAI ? `
+      ${rec.prompt ? `<div class="pred-view-label">プロンプト</div>
+        <div class="pred-view-text" style="background:#f8f9fa;padding:10px;border-radius:4px;font-size:12px;margin-bottom:10px">${escHtml(rec.prompt)}</div>` : ''}
+      ${rec.ai_output ? `<div class="pred-view-label">AI の回答</div>
+        <div class="pred-view-text" style="background:#e8f0fe;padding:10px;border-radius:4px;font-size:12px">${escHtml(rec.ai_output)}</div>` : ''}
+      ${!rec.prompt && !rec.ai_output ? '<div style="color:#aaa;font-size:12px">記録なし</div>' : ''}
+    ` : `
+      ${rec.memo ? `<div class="pred-view-label">メモ</div>
+        <div class="pred-view-text" style="background:#e6f4ea;padding:10px;border-radius:4px;font-size:12px">${escHtml(rec.memo)}</div>` : '<div style="color:#aaa;font-size:12px">メモなし</div>'}
+    `;
+
+    return `
+      <div class="pred-view-block" style="border-left-color:${color}">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span class="group-dot" style="background:${color};width:12px;height:12px"></span>
+          <strong>${rec.group_name}</strong>
+          ${typeBadge}
+          <span style="margin-left:auto;font-size:11px;color:#aaa">${rec.updated_at||rec.created_at||''}</span>
+        </div>
+        ${content}
+      </div>`;
+  }).join('');
+}
+
+// ══ 払戻モーダル ══════════════════════════════════════════════════════════════
 async function showPayout(raceId, raceName) {
   const modal = document.getElementById('payout-modal');
   modal.style.display = 'flex';
-
   document.getElementById('payout-title').textContent = raceName + ' の払戻テーブル';
   document.getElementById('payout-rank').textContent = '取得中...';
   document.getElementById('payout-body').innerHTML = '';
 
   const res = await api('GET', `/api/results/${raceId}`);
-  if (!res) {
-    document.getElementById('payout-rank').textContent = '結果データがありません';
-    return;
-  }
+  if (!res) { document.getElementById('payout-rank').textContent = '結果データがありません'; return; }
 
   const ranks = [res.rank1, res.rank2, res.rank3].filter(Boolean);
-  document.getElementById('payout-rank').innerHTML =
-    '<strong>着順：</strong>' + ['1着','2着','3着'].slice(0, ranks.length)
-      .map((r,i) => `<span style="margin-right:16px">${r} ${ranks[i]}</span>`).join('');
+  document.getElementById('payout-rank').innerHTML = '<strong>着順：</strong>'
+    + ['1着','2着','3着'].slice(0,ranks.length).map((r,i)=>`<span style="margin-right:16px">${r} ${ranks[i]}</span>`).join('');
 
   const harai = res.harai_list || [];
   if (!harai.length) {
-    document.getElementById('payout-body').innerHTML =
-      `<tr><td colspan="3" style="padding:12px;color:#666">${res.haraimodoshi || 'データなし'}</td></tr>`;
+    document.getElementById('payout-body').innerHTML = `<tr><td colspan="3" style="padding:12px;color:#666">${res.haraimodoshi||'データなし'}</td></tr>`;
     return;
   }
-
   const ORDER = ['単勝','複勝','枠連','馬連','ワイド','馬単','三連複','三連単'];
-  const sorted = [...harai].sort((a, b) => {
-    const ai = ORDER.indexOf(a.ticket_type);
-    const bi = ORDER.indexOf(b.ticket_type);
-    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-  });
-
-  document.getElementById('payout-body').innerHTML = sorted.map(h => `
+  const sorted = [...harai].sort((a,b)=>(ORDER.indexOf(a.ticket_type)+1||99)-(ORDER.indexOf(b.ticket_type)+1||99));
+  document.getElementById('payout-body').innerHTML = sorted.map(h=>`
     <tr>
       <td><span style="background:#1a73e8;color:#fff;padding:2px 8px;border-radius:3px;font-size:11px;font-weight:bold">${h.ticket_type}</span></td>
       <td style="font-weight:bold">${h.combination}</td>
@@ -1130,20 +1153,15 @@ async function showPayout(raceId, raceName) {
     </tr>`).join('');
 }
 
-function closePayout() {
-  document.getElementById('payout-modal').style.display = 'none';
-}
+function closePayout() { document.getElementById('payout-modal').style.display = 'none'; }
+document.getElementById('payout-modal').addEventListener('click', e => { if (e.target===e.currentTarget) closePayout(); });
 
-document.getElementById('payout-modal').addEventListener('click', function(e) {
-  if (e.target === this) closePayout();
-});
-
-// ══ 初期化 ══════════════════════════════════════════════════════════════════
+// ══ 初期化 ════════════════════════════════════════════════════════════════════
 loadRaceList();
 </script>
 
-<!-- 払戻テーブル モーダル -->
-<div id="payout-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center;">
+<!-- 払戻モーダル -->
+<div id="payout-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
   <div style="background:#fff;border-radius:8px;padding:24px;max-width:600px;width:90%;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.3)">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <h3 id="payout-title" style="font-size:15px;font-weight:bold"></h3>
@@ -1152,11 +1170,7 @@ loadRaceList();
     <div id="payout-rank" style="background:#f8f9fa;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:13px"></div>
     <div class="tbl-wrap">
       <table>
-        <thead>
-          <tr>
-            <th>券種</th><th>組み合わせ</th><th style="text-align:right">払戻金額</th>
-          </tr>
-        </thead>
+        <thead><tr><th>券種</th><th>組み合わせ</th><th style="text-align:right">払戻金額</th></tr></thead>
         <tbody id="payout-body"></tbody>
       </table>
     </div>

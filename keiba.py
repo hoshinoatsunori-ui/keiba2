@@ -177,15 +177,51 @@ def api_create_forecast_group():
     d = request.json or {}
     name = d.get("name", "").strip()
     color = d.get("color", "#1a73e8")
+    type_ = d.get("type", "ai")
+    ai_model = d.get("ai_model", "").strip()
     if not name:
         return jsonify({"success": False, "message": "グループ名を入力してください"}), 400
-    group_id = db.create_forecast_group(name, color)
-    return jsonify({"success": True, "id": group_id, "name": name, "color": color})
+    group_id = db.create_forecast_group(name, color, type_, ai_model)
+    return jsonify({"success": True, "id": group_id, "name": name,
+                    "color": color, "type": type_, "ai_model": ai_model})
 
 
 @app.route("/api/forecast_groups/<int:group_id>", methods=["DELETE"])
 def api_delete_forecast_group(group_id: int):
     db.delete_forecast_group(group_id)
+    return jsonify({"success": True})
+
+
+# ── API: 予想記録 ──────────────────────────────────────────────────────────────
+
+@app.route("/api/predictions", methods=["GET"])
+def api_get_predictions():
+    race_id = request.args.get("race_id")
+    forecast_group_id = request.args.get("forecast_group_id")
+    fgid = int(forecast_group_id) if forecast_group_id else None
+    return jsonify(db.get_prediction_records(race_id, fgid))
+
+
+@app.route("/api/predictions", methods=["POST"])
+def api_upsert_prediction():
+    d = request.json or {}
+    race_id = d.get("race_id", "")
+    fgid = d.get("forecast_group_id")
+    if not race_id or not fgid:
+        return jsonify({"success": False, "message": "race_id と forecast_group_id は必須です"}), 400
+    rid = db.upsert_prediction_record(
+        race_id=race_id,
+        forecast_group_id=int(fgid),
+        prompt=d.get("prompt", ""),
+        ai_output=d.get("ai_output", ""),
+        memo=d.get("memo", ""),
+    )
+    return jsonify({"success": True, "id": rid})
+
+
+@app.route("/api/predictions/<int:record_id>", methods=["DELETE"])
+def api_delete_prediction(record_id: int):
+    db.delete_prediction_record(record_id)
     return jsonify({"success": True})
 
 
